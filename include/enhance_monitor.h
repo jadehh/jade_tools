@@ -24,6 +24,7 @@ namespace jade
 {
     class JADE_API EnhancedTimeProfiler
     {
+        int count_ = 1;
         DynamicSystemMonitorImpl * dynamicSystemMonitor;
         [[nodiscard]] std::vector<std::vector<std::string>> getDatas() const;
     public:
@@ -32,7 +33,7 @@ namespace jade
         // 开始计时并监控资源
         void startStep(const std::string& stepName, int interval_ms=1000) const;
         // 结束计时并记录资源使用情况
-        void endStep(const std::string& stepName) const;
+        void endStep(const std::string& stepName,int count=1);
         static std::vector<SystemMonitorImpl::ResourceMetrics> extractMiddleElements(const std::vector<SystemMonitorImpl::ResourceMetrics>& arr);
         // 输出统计报告
         void printTable() const;

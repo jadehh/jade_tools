@@ -220,3 +220,7 @@ namespace jade
 
 
 } // namespace jade
+const char* getVersion()
+{
+    return "v1.0.0";
+}

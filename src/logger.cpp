@@ -155,11 +155,14 @@ namespace jade
         try
         {
             std::vector<spdlog::sink_ptr> sinks;
+            std::string pattern;
+            if (logLevel <= Logger::S_DEBUG) pattern = "%Y-%m-%d %H:%M:%S.%e - [" + app_name + "] - %^%l%$ - [%s:%#] [Thread %t] : %v";
+            else pattern = "%Y-%m-%d %H:%M:%S.%e - [" + app_name + "] - %^%l%$ : %v";
             // 控制台输出
             if (consoleOutput)
             {
                 const auto consoleSink = std::make_shared<spdlog::sinks::stdout_color_sink_mt>();
-                consoleSink->set_pattern("%Y-%m-%d %H:%M:%S.%e - [" + app_name + "] - %^%l%$ - [%s:%#] [Thread %t] %v");
+                consoleSink->set_pattern(pattern);
                 sinks.push_back(consoleSink);
             }
             // 文件输出
@@ -168,7 +171,7 @@ namespace jade
                 // 创建日志目录
                 std::filesystem::create_directories(logDir);
                 const auto fileSink = std::make_shared<spdlog::sinks::rotating_file_sink_mt>(logDir + "/" + logName + ".log", maxFileSize, maxFiles);
-                fileSink->set_pattern("%Y-%m-%d %H:%M:%S.%e - [" + app_name + "] - %^%l%$:%v");
+                fileSink->set_pattern(pattern);
                 sinks.push_back(fileSink);
             }
 

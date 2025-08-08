@@ -68,4 +68,8 @@ namespace jade
     std::string getTimeStampString(const char*fmt_arg="[%Y-%m-%d %H:%M:%S]");
 
 } // namespace jade
+
+extern "C"{
+    JADE_API const char* getVersion();
+}
 #endif // JADE_TOOLS_H

@@ -53,7 +53,7 @@ int main(const int argc, char* argv[]) {
     // 获取CPU核心数
     const u_int numCores = std::thread::hardware_concurrency();
     std::cout << "启动" << numCores << "个工作线程占满CPU..." << std::endl;
-    const EnhancedTimeProfiler profiler;
+    EnhancedTimeProfiler profiler;
     profiler.startStep("处理阶段");
     std::vector<std::thread> threads;
     threads.reserve(12);

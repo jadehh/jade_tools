@@ -26,6 +26,7 @@
 #endif
 #include "include/enhance_monitor.h"
 #include <algorithm>
+#include <iostream>
 #include <string>
 #include <mutex>
 #include "include/system_monitor_impl.h"
@@ -117,9 +118,9 @@ void SystemMonitorImpl::getMetrics(ResourceMetrics& metrics)
         memcpy(&user, &f_user, sizeof(FILETIME));
 
         // 计算增量
-        const auto sysDiff = static_cast<double>(sys.QuadPart - cpuState.lastSysCPU.QuadPart);
-        const auto userDiff = static_cast<double>(user.QuadPart - cpuState.lastUserCPU.QuadPart);
-        const auto timeDiff = static_cast<double>(now.QuadPart - cpuState.lastCPU.QuadPart);
+        const auto sysDiff = sys.QuadPart - cpuState.lastSysCPU.QuadPart;
+        const auto userDiff =user.QuadPart - cpuState.lastUserCPU.QuadPart;
+        const auto timeDiff = now.QuadPart - cpuState.lastCPU.QuadPart;
 
         // 更新状态
         cpuState.lastCPU = now;
@@ -129,7 +130,7 @@ void SystemMonitorImpl::getMetrics(ResourceMetrics& metrics)
         // 计算使用率
         if (timeDiff > 0 && cpuState.numProcessors > 0)
         {
-            double percent = sysDiff + userDiff / timeDiff;
+            double percent = static_cast<double>((sysDiff + userDiff) )/ static_cast<double>(timeDiff);
             percent /= cpuState.numProcessors;
             metrics.cpuUsage = percent * 100.0;
         }
@@ -373,8 +374,9 @@ void EnhancedTimeProfiler::startStep(const std::string& stepName, const int inte
     });
 }
 
-void EnhancedTimeProfiler::endStep(const std::string& stepName) const
+void EnhancedTimeProfiler::endStep(const std::string& stepName, const int count)
 {
+    count_ = count;
     auto& steps = dynamicSystemMonitor->stepData[stepName];
     if (steps.empty()) return;
     auto& [startTime, duration,metrics] = steps.back();
@@ -449,10 +451,11 @@ std::vector<std::vector<std::string>> EnhancedTimeProfiler::getDatas() const
                 totalGPUMem /= extractMetricsSize;
             }
         }
+
         const int count = static_cast<int>(metricsList.size());
         vector data = {
-            name, formatValue(count / 1.0), formatValue(totalTime / 1000.0, 3),
-            formatValue(totalTime / (count * 1000.0), 3),
+            name, formatValue(count*count_ / 1.0), formatValue(totalTime / 1000.0, 3),
+            formatValue(totalTime / (count * count_ * 1000.0), 3),
             formatValue(totalCPU / count), formatValue(totalMem / count), formatValue(totalSpeedReads / count),
             formatValue(totalSpeedWrites / count), formatValue(totalGPU / count), formatValue(totalGPUMem / count)
         };
