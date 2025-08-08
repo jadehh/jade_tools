@@ -1,0 +1,9 @@
+set(SPDLOG_DIR "" CACHE PATH "location of libraries")
+if (NOT DEFINED SPDLOG_DIR OR SPDLOG_DIR STREQUAL "")
+    message("-- Find SPDLOG_DIR failed,Please set SPDLOG_DIR with -D SPDLOG_DIR=/usr/local/spdlog")
+    option(BUILD_SPDLOG_ON "Build spdlog" OFF)
+else ()
+    message("-- Find SPDLOG_DIR success:${SPDLOG_DIR}")
+endif ()
+set(SPDLOG_INCLUDE_DIR "${SPDLOG_DIR}/include")
+

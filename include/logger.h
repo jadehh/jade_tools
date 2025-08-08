@@ -12,8 +12,6 @@
 #define SPDLOG_LEVEL_NAMES {"TRACE","DEBUG","INFO","WARNING","ERROR","CRITICAL","OFF" }
 #include "jade_tools.h"
 #include <string>
-#include <spdlog/spdlog.h>
-#include <spdlog/sinks/stdout_color_sinks.h>
 
 namespace jade
 {
@@ -59,7 +57,7 @@ namespace jade
         void exception(const std::string& message, const std::exception& e, int exitCode, const char* file = "", int line = 0) const;
 
         // 设置日志级别
-        void setLevel(spdlog::level::level_enum level) const;
+        void setLevel(Level level) const;
 
         // 立即刷新日志
         void flush() const;

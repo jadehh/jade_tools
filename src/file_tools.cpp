@@ -10,6 +10,7 @@
 #include "include/file_tools.h"
 
 #include <fstream>
+#include <iostream>
 using namespace jade;
 bool FileTools::CreateDirectory(const std::string& path)
 {
@@ -106,7 +107,7 @@ bool FileTools::writeBinaryToFile(const string& path, const float* data, const i
 {
     // 写入二进制文件
     std::ofstream outFile(path, ios::out | ios::binary);
-    if (!outFile.write(reinterpret_cast<const char*>(data), size * sizeof(float))) {
+    if (!outFile.write(reinterpret_cast<const char*>(data), static_cast<long long>(size* sizeof(float)))) {
         std::cerr << "文件路径为:" << path << "写入文件失败！" << std::endl;
         return false;
     }

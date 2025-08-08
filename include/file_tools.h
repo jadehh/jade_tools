@@ -48,9 +48,9 @@ namespace jade
         // 写入二进制文件
         static bool writeBinaryToFile(const string& path, const float* data,  int  size);
         static bool writeBinaryToFile(const string& path, const char * data,  int  size);
-
-
-
+        // 禁止拷贝和赋值
+        FileTools(const FileTools&) = delete;
+        FileTools& operator=(const FileTools&) = delete;
 
     private:
         // 将错误信息设置为模块私有，通过静态方法访问
@@ -60,11 +60,6 @@ namespace jade
         }
         FileTools() = default;  // 私有构造函数
         ~FileTools() = default;
-
-        // 禁止拷贝和赋值
-        FileTools(const FileTools&) = delete;
-        FileTools& operator=(const FileTools&) = delete;
-
     };
 }
 

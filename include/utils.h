@@ -22,7 +22,10 @@ namespace jade
             static Utils instance;
             return instance;
         }
-        static void SetConsoleUTF8();
+        static void setConsole();
+        static void setConsoleUTF8();
+        static void enableVirtualTerminal();
+
     };
 }
 #endif //UTILS_H
