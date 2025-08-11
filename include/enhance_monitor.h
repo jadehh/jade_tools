@@ -31,7 +31,7 @@ namespace jade
         EnhancedTimeProfiler();
         ~EnhancedTimeProfiler();
         // 开始计时并监控资源
-        void startStep(const std::string& stepName, int interval_ms=100) const;
+        void startStep(const std::string& stepName, int interval_ms=10) const;
         // 结束计时并记录资源使用情况
         void endStep(const std::string& stepName,int count=1);
         static std::vector<SystemMonitorImpl::ResourceMetrics> extractMiddleElements(const std::vector<SystemMonitorImpl::ResourceMetrics>& arr);
