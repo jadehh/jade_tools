@@ -49,12 +49,12 @@ int main(const int argc, char* argv[]) {
     LOG_INFO("Application started");
     LOG_WARN("This is a warning message");
     LOG_ERROR("This is an error message");
+    void* profiler = EnhancedTimeProfilerCreate();
     // Logger::getInstance().critical("严重的错误",-200);
     // 获取CPU核心数
     const u_int numCores = std::thread::hardware_concurrency();
     std::cout << "启动" << numCores << "个工作线程占满CPU..." << std::endl;
-    EnhancedTimeProfiler profiler;
-    profiler.startStep("处理阶段");
+    EnhancedTimeProfilerStart(profiler,"处理阶段");
     std::vector<std::thread> threads;
     threads.reserve(12);
 for (int i = 0; i < 12; ++i) {
@@ -64,9 +64,9 @@ for (int i = 0; i < 12; ++i) {
     for (auto& thread : threads) {
         thread.join();
     }
-    profiler.endStep("处理阶段");
-    profiler.printTable();
-    LOG_DEBUG(profiler.getTable());
+    EnhancedTimeProfilerStop(profiler,"处理阶段",12);
+    LOG_DEBUG(EnhancedTimeProfilerResult(profiler));
+    EnhancedTimeProfilerDestroy(profiler);
     Logger::getInstance().shutDown();
     // 暂停10s
     return 0;

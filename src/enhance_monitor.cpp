@@ -60,6 +60,7 @@ void SystemMonitorImpl::getMetrics(ResourceMetrics& metrics)
     PROCESS_MEMORY_COUNTERS_EX pmc = {sizeof(pmc)};
     if (GetProcessMemoryInfo(hProcess, reinterpret_cast<PPROCESS_MEMORY_COUNTERS>(&pmc), sizeof(pmc)))
     {
+        // std::cout << "pmc.PrivateUsage" << pmc.PrivateUsage << std::endl;
         metrics.memoryUsage = bytesToMB(pmc.PrivateUsage);
     }
     else
@@ -376,6 +377,8 @@ void EnhancedTimeProfiler::startStep(const std::string& stepName, const int inte
 
 void EnhancedTimeProfiler::endStep(const std::string& stepName, const int count)
 {
+    // std::cout << "end Step" << std::endl;
+    // std::cout << "count:" << count << "history size:"<< dynamicSystemMonitor->getHistory().size() << std::endl;
     count_ = count;
     auto& steps = dynamicSystemMonitor->stepData[stepName];
     if (steps.empty()) return;
@@ -478,4 +481,33 @@ std::string EnhancedTimeProfiler::getTable() const
 void EnhancedTimeProfiler::reset() const
 {
     dynamicSystemMonitor->stepData.clear();
+}
+
+void* EnhancedTimeProfilerCreate()
+{
+    return new EnhancedTimeProfiler();
+}
+
+void EnhancedTimeProfilerStart(void* obj,const char* name)
+{
+    const auto instance = static_cast<EnhancedTimeProfiler*>(obj);
+    instance->startStep(name);
+}
+
+void EnhancedTimeProfilerStop(void* obj, const char* name, const int count)
+{
+    const auto instance = static_cast<EnhancedTimeProfiler*>(obj);
+    instance->endStep(name,count);
+}
+
+const char* EnhancedTimeProfilerResult(void* obj)
+{
+    const auto instance = static_cast<EnhancedTimeProfiler*>(obj);
+    return instance->getTable().c_str();
+}
+
+
+void EnhancedTimeProfilerDestroy(void* obj)
+{
+    delete static_cast<EnhancedTimeProfiler*>(obj);
 }

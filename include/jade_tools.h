@@ -69,7 +69,5 @@ namespace jade
 
 } // namespace jade
 
-extern "C"{
-    JADE_API const char* getVersion();
-}
+
 #endif // JADE_TOOLS_H

@@ -31,7 +31,7 @@ namespace jade
         EnhancedTimeProfiler();
         ~EnhancedTimeProfiler();
         // 开始计时并监控资源
-        void startStep(const std::string& stepName, int interval_ms=1000) const;
+        void startStep(const std::string& stepName, int interval_ms=100) const;
         // 结束计时并记录资源使用情况
         void endStep(const std::string& stepName,int count=1);
         static std::vector<SystemMonitorImpl::ResourceMetrics> extractMiddleElements(const std::vector<SystemMonitorImpl::ResourceMetrics>& arr);
@@ -42,4 +42,12 @@ namespace jade
         void reset() const;
     };
 }
+extern "C"{
+    JADE_API void* EnhancedTimeProfilerCreate();
+    JADE_API void EnhancedTimeProfilerStart(void* obj,const char* name);
+    JADE_API void EnhancedTimeProfilerStop(void* obj, const char* name,  int count);
+    JADE_API const char* EnhancedTimeProfilerResult(void* obj);
+    JADE_API void EnhancedTimeProfilerDestroy(void* obj);
+}
 #endif //SYSTEM_MONITOR_H
+

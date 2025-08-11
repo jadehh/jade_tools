@@ -156,18 +156,7 @@ namespace jade
 
     double bytesToMB(const SIZE_T bytes)
     {
-        int suffixIndex = 0;
-        auto size = static_cast<double>(bytes);
-        while (size >= 1024 && suffixIndex < 3)
-        {
-            size /= 1024;
-            suffixIndex++;
-        }
-        if (suffixIndex == 2)
-        {
-            return size;
-        }
-        return 0;
+        return static_cast<double>(bytes) / (1024*1024);
     }
 
     std::string getOperatingSystemName()
@@ -220,7 +209,3 @@ namespace jade
 
 
 } // namespace jade
-const char* getVersion()
-{
-    return "v1.0.0";
-}
