@@ -20,7 +20,7 @@ namespace jade
     class  DynamicSystemMonitorImpl
     {
     public:
-        std::vector<string> headers = {"步骤名称", "调用次数", "总耗时(s)", "平均耗时(s)","CPU(%)","内存(MB)","磁盘读取(MB/s)","磁盘写入(MB/s)", "GPU(%)","显存(MB)"};
+        std::vector<string> headers = {"步骤名称", "调用次数", "总耗时(s)", "平均耗时(ms)","CPU(%)","内存(MB)","磁盘读取(MB/s)","磁盘写入(MB/s)", "GPU(%)","显存(MB)"};
         struct StepMetrics
         {
             std::chrono::time_point<std::chrono::high_resolution_clock> startTime;

@@ -458,7 +458,7 @@ std::vector<std::vector<std::string>> EnhancedTimeProfiler::getDatas() const
         const int count = static_cast<int>(metricsList.size());
         vector data = {
             name, formatValue(count*count_ / 1.0), formatValue(totalTime / 1000.0, 3),
-            formatValue(totalTime / (count * count_ * 1000.0), 3),
+            formatValue(totalTime / (count * count_), 1),
             formatValue(totalCPU / count), formatValue(totalMem / count), formatValue(totalSpeedReads / count),
             formatValue(totalSpeedWrites / count), formatValue(totalGPU / count), formatValue(totalGPUMem / count)
         };
