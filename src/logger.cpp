@@ -10,6 +10,7 @@
 #include "include/logger.h"
 #include "include/logger_impl.h"
 #include <filesystem>
+#include <iostream>
 #include <sstream>
 #if defined(__has_include)
 #  if __has_include(<spdlog/spdlog.h>)  // 标准化的头文件存在性检查
@@ -26,10 +27,15 @@
 
 namespace jade
 {
-    Logger& Logger::getInstance()
+    Logger& Logger::getInstance(const std::string& module )
     {
-        static Logger instance;
-        return instance;
+        static std::map<std::string, Logger> instances;
+        const std::string key = module.empty() ? "default" : module;
+        if (!instances.count(key)) {
+            instances[key].initRepeat(key);
+        }
+        return instances[key];  // 自动插入新实例（若不存在）
+
     }
 
     Logger::Logger() : impl_(new LoggerImpl())
@@ -52,6 +58,11 @@ namespace jade
         const size_t maxFiles) const
     {
         impl_->init(app_name, logName, logDir, logLevel, consoleOutput, fileOutput, maxFileSize, maxFiles);
+    }
+
+    void Logger::initRepeat(const std::string& app_name) const
+    {
+        impl_->initRepeat(app_name);
     }
 
     void Logger::trace(const std::string& message, const char* file, const int line) const
@@ -154,6 +165,13 @@ namespace jade
 #ifdef SPDLOG_ENABLE
         try
         {
+            default_log_name_ = logName;
+            default_console_out_ = consoleOutput;
+            default_log_dir_ = logDir;
+            default_file_out_ = fileOutput;
+            default_max_file_size_ = maxFileSize;
+            default_max_files_ = maxFiles;
+            default_level_ = logLevel;
             std::vector<spdlog::sink_ptr> sinks;
             std::string pattern;
             if (logLevel <= Logger::S_DEBUG) pattern = "%Y-%m-%d %H:%M:%S.%e - [" + app_name + "] - %^%l%$ - [%s:%#] [Thread %t] : %v";
@@ -179,8 +197,6 @@ namespace jade
             logger_->sink = std::make_shared<spdlog::logger>(logName, begin(sinks), end(sinks));
             logger_->sink->set_level(static_cast<spdlog::level::level_enum>(logLevel)); // 默认记录所有级别
             logger_->sink->flush_on(spdlog::level::trace); // 立即刷新
-            // 注册logger以便全局访问
-            spdlog::register_logger(logger_->sink);
             initialized_ = true;
         }
         catch (const spdlog::spdlog_ex& ex)
@@ -194,12 +210,20 @@ namespace jade
 #endif
     }
 
+
+    void LoggerImpl::initRepeat(const std::string& name)
+    {
+        init(name,default_log_name_,default_log_dir_,default_level_,default_console_out_,default_file_out_,default_max_file_size_,default_max_files_);
+    }
+
+
     void LoggerImpl::log(Logger::Level level, const std::string& message, const char* file, const int line) const
     {
         if (initialized_ && !shutdown_)
         {
 #if SPDLOG_ENABLE
-            if (logger_) logger_->sink->log(spdlog::source_loc{file, line, SPDLOG_FUNCTION}, static_cast<spdlog::level::level_enum>(level), message);
+            if (logger_) logger_->sink->log(spdlog::source_loc{file, line, SPDLOG_FUNCTION},
+                                            static_cast<spdlog::level::level_enum>(level), message);
 #else
             std::stringstream ss;
             ss << getTimeStampString()   << " - " ;

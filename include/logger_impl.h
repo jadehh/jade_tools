@@ -29,7 +29,7 @@ namespace jade
             bool fileOutput,
             size_t maxFileSize,
             size_t maxFiles);
-
+        void initRepeat(const std::string& name);
         void log(Logger::Level level, const std::string& message, const char* file, int line) const;
         void setLevel(Logger::Level level) const;
         void flush() const;
@@ -40,6 +40,16 @@ namespace jade
         std::shared_ptr<SpdLogImpl> logger_;
         bool initialized_ = false;
         bool shutdown_ = false;
+
+        // 静态变量保存首次配置
+        inline static std::string default_log_name_;
+        inline static std::string default_log_dir_;
+        inline static Logger::Level default_level_;
+        inline static bool default_console_out_;
+        inline static bool default_file_out_;
+        inline static size_t default_max_file_size_;
+        inline static size_t default_max_files_;
+
     };
 }
 

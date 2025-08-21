@@ -10,6 +10,8 @@
 #define JADE_TOOLS_LOGGER_H
 
 #define SPDLOG_LEVEL_NAMES {"TRACE","DEBUG","INFO","WARNING","ERROR","CRITICAL","OFF" }
+#include <map>
+
 #include "jade_tools.h"
 #include <string>
 
@@ -33,7 +35,7 @@ namespace jade
         };
 
         // 获取单例实例
-        static Logger& getInstance();
+        static Logger& getInstance(const std::string& module = "");
 
         // 初始化日志系统
         void init(
@@ -45,7 +47,7 @@ namespace jade
                   bool fileOutput = true,
                   size_t maxFileSize = 1024 * 1024 * 1, // 1MB
                   size_t maxFiles = 30) const;
-
+        void initRepeat(const std::string& app_name = "app") const;
         // 日志记录方法
         void log(Level level, const std::string& message, const char* file = "", int line = 0) const;
         void trace(const std::string& message, const char* file = "", int line = 0) const;
@@ -66,11 +68,13 @@ namespace jade
         void shutDown() const;
         // 特殊成员函数
         ~Logger();
+        Logger(); // 私有构造函数
 
     private:
-        Logger(); // 私有构造函数
         // 使用裸指针代替unique_ptr，由实现类管理生命周期
         LoggerImpl* impl_;
+
+
     };
 }
 
@@ -82,5 +86,15 @@ namespace jade
 #define LOG_ERROR(message) jade::Logger::getInstance().error(message, __FILE__, __LINE__)
 #define LOG_CRITICAL(message,exitCode) jade::Logger::getInstance().critical(message, exitCode,__FILE__, __LINE__)
 #define LOG_EXCEPTION(message,ex, exitCode) jade::Logger::getInstance().exception(message, ex, exitCode, __FILE__, __LINE__)
+
+
+#define DLL_LOG_TRACE(module,message) jade::Logger::getInstance(module).trace(message, __FILE__, __LINE__)
+#define DLL_LOG_DEBUG(module,message) jade::Logger::getInstance(module).debug(message, __FILE__, __LINE__)
+#define DLL_LOG_INFO(module,message) jade::Logger::getInstance(module).info(message, __FILE__, __LINE__)
+#define DLL_LOG_WARN(module,message) jade::Logger::getInstance(module).warn(message, __FILE__, __LINE__)
+#define DLL_LOG_ERROR(module,message) jade::Logger::getInstance(module).error(message, __FILE__, __LINE__)
+#define DLL_LOG_CRITICAL(module,message,exitCode) jade::Logger::getInstance(module).critical(message, exitCode,__FILE__, __LINE__)
+#define DLL_LOG_EXCEPTION(module,message,ex, exitCode) jade::Logger::getInstance(module).exception(message, ex, exitCode, __FILE__, __LINE__)
+
 
 #endif
