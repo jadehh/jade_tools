@@ -6,4 +6,3 @@ else ()
     message("-- Find SPDLOG_DIR success:${SPDLOG_DIR}")
 endif ()
 set(SPDLOG_INCLUDE_DIR "${SPDLOG_DIR}/include")
-
