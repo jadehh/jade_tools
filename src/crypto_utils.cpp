@@ -6,6 +6,7 @@
 # @Software : Samples
 # @Desc     : crypto_utils.cpp
 */
+#include "include/jade_tools.h"
 #include "include/crypto_utils.h"
 #include <fstream>
 #include <openssl/err.h>
@@ -13,7 +14,7 @@
 #include <stdexcept>
 #include <random>
 
-CryptoUtil::CryptoUtil(const CryptoMode mode)
+CryptoUtil::CryptoUtil(const jade::JadeCryptoUtil::CryptoMode mode)
     : mode_(mode), ctx_(nullptr) {
     initializeContext();
 }
@@ -23,14 +24,14 @@ CryptoUtil::~CryptoUtil() {
 }
 
 void CryptoUtil::setKey(const std::vector<unsigned char>& key) {
-    if (!validateKeySize(mode_, key.size())) {
+    if (!jade::JadeCryptoUtil::validateKeySize(mode_, key.size())) {
         throw std::invalid_argument("Invalid key size for selected mode");
     }
     key_ = key;
 }
 
 void CryptoUtil::setIV(const std::vector<unsigned char>& iv) {
-    if (!validateIVSize(mode_, iv.size())) {
+    if (!jade::JadeCryptoUtil::validateIVSize(mode_, iv.size())) {
         throw std::invalid_argument("Invalid IV size for selected mode");
     }
     iv_ = iv;
@@ -51,21 +52,21 @@ void CryptoUtil::cleanupContext() {
 
 const EVP_CIPHER* CryptoUtil::getCipher() const {
     switch (mode_) {
-        case CryptoMode::AES_256_CBC: return EVP_aes_256_cbc();
-        case CryptoMode::AES_256_ECB: return EVP_aes_256_ecb();
-        case CryptoMode::AES_128_CBC: return EVP_aes_128_cbc();
-        case CryptoMode::AES_128_ECB: return EVP_aes_128_ecb();
+        case jade::JadeCryptoUtil::CryptoMode::AES_256_CBC: return EVP_aes_256_cbc();
+        case jade::JadeCryptoUtil::CryptoMode::AES_256_ECB: return EVP_aes_256_ecb();
+        case jade::JadeCryptoUtil::CryptoMode::AES_128_CBC: return EVP_aes_128_cbc();
+        case jade::JadeCryptoUtil::CryptoMode::AES_128_ECB: return EVP_aes_128_ecb();
         default: return EVP_aes_256_cbc();
     }
 }
 
-CryptoUtil::CryptoResult CryptoUtil::processData(
+jade::JadeCryptoUtil::CryptoResult CryptoUtil::processData(
     const std::vector<unsigned char>& inputData,
     std::vector<unsigned char>& outputData,
     bool encrypt) const
 {
 
-    CryptoResult result{false, "", 0};
+    jade::JadeCryptoUtil::CryptoResult result{false, "", 0};
 
     if (key_.empty()) {
         result.message = encrypt ? "未设置加密密钥" : "未设置解密密钥";
@@ -128,13 +129,13 @@ CryptoUtil::CryptoResult CryptoUtil::processData(
     return result;
 }
 
-CryptoUtil::CryptoResult CryptoUtil::processFile(
+jade::JadeCryptoUtil::CryptoResult CryptoUtil::processFile(
     const std::string& inputFile,
     const std::string& outputFile,
     bool encrypt) const
 {
 
-    CryptoResult result{false, "", 0};
+    jade::JadeCryptoUtil::CryptoResult result{false, "", 0};
 
     try {
         // 读取输入文件
@@ -144,7 +145,7 @@ CryptoUtil::CryptoResult CryptoUtil::processFile(
             return result;
         }
 
-        size_t fileSize = inFile.tellg();
+        size_t fileSize = static_cast<size_t>(inFile.tellg());
         inFile.seekg(0, std::ios::beg);
 
         std::vector<unsigned char> inputData(fileSize);
@@ -187,19 +188,19 @@ CryptoUtil::CryptoResult CryptoUtil::processFile(
 }
 
 // 加密方法实现
-CryptoUtil::CryptoResult CryptoUtil::encryptDataToMemory(
+jade::JadeCryptoUtil::CryptoResult CryptoUtil::encryptDataToMemory(
     const std::vector<unsigned char>& inputData,
     std::vector<unsigned char>& outputData) const
 {
     return processData(inputData, outputData, true);
 }
 
-CryptoUtil::CryptoResult CryptoUtil::encryptFileToMemory(
+jade::JadeCryptoUtil::CryptoResult CryptoUtil::encryptFileToMemory(
     const std::string& inputFile,
     std::vector<unsigned char>& outputData) const
 {
 
-    CryptoResult result{false, "", 0};
+    jade::JadeCryptoUtil::CryptoResult result{false, "", 0};
 
     try {
         std::ifstream file(inputFile, std::ios::binary | std::ios::ate);
@@ -208,7 +209,7 @@ CryptoUtil::CryptoResult CryptoUtil::encryptFileToMemory(
             return result;
         }
 
-        const size_t fileSize = file.tellg();
+        const size_t fileSize = static_cast<size_t>(file.tellg());
         file.seekg(0, std::ios::beg);
 
         std::vector<unsigned char> inputData(fileSize);
@@ -226,7 +227,7 @@ CryptoUtil::CryptoResult CryptoUtil::encryptFileToMemory(
     }
 }
 
-CryptoUtil::CryptoResult CryptoUtil::encryptFileToFile(
+jade::JadeCryptoUtil::CryptoResult CryptoUtil::encryptFileToFile(
     const std::string& inputFile,
     const std::string& outputFile) const
 {
@@ -234,92 +235,36 @@ CryptoUtil::CryptoResult CryptoUtil::encryptFileToFile(
 }
 
 // 解密方法实现
-CryptoUtil::CryptoResult CryptoUtil::decryptData(
+jade::JadeCryptoUtil::CryptoResult CryptoUtil::decryptData(
     const std::vector<unsigned char>& inputData,
     std::vector<unsigned char>& outputData) const
 {
     return processData(inputData, outputData, false);
 }
 
-CryptoUtil::CryptoResult CryptoUtil::decryptFileToMemory(
+jade::JadeCryptoUtil::CryptoResult CryptoUtil::decryptFileToMemory(
     const std::string& inputFile,
     std::vector<unsigned char>& outputData) const
 {
     return processFile(inputFile, "", false); // 修改为使用processFile
 }
 
-CryptoUtil::CryptoResult CryptoUtil::decryptFileToFile(
+jade::JadeCryptoUtil::CryptoResult CryptoUtil::decryptFileToFile(
     const std::string& inputFile,
     const std::string& outputFile) const
 {
     return processFile(inputFile, outputFile, false);
 }
 
-// 静态工具方法
-bool CryptoUtil::validateKeySize(CryptoMode mode, size_t keySize) {
-    switch (mode) {
-        case CryptoMode::AES_256_CBC:
-        case CryptoMode::AES_256_ECB:
-            return keySize == 32; // 256位 = 32字节
-        case CryptoMode::AES_128_CBC:
-        case CryptoMode::AES_128_ECB:
-            return keySize == 16; // 128位 = 16字节
-        default:
-            return false;
-    }
-}
 
-bool CryptoUtil::validateIVSize(CryptoMode mode, size_t ivSize) {
-    switch (mode) {
-        case CryptoMode::AES_256_CBC:
-        case CryptoMode::AES_128_CBC:
-            return ivSize == 16; // 128位 = 16字节
-        case CryptoMode::AES_256_ECB:
-        case CryptoMode::AES_128_ECB:
-            return ivSize == 0; // ECB模式不需要IV
-        default:
-            return false;
-    }
-}
-
-std::string CryptoUtil::getModeName(CryptoMode mode) {
-    switch (mode) {
-        case CryptoMode::AES_256_CBC: return "AES-256-CBC";
-        case CryptoMode::AES_256_ECB: return "AES-256-ECB";
-        case CryptoMode::AES_128_CBC: return "AES-128-CBC";
-        case CryptoMode::AES_128_ECB: return "AES-128-ECB";
-        default: return "Unknown";
-    }
-}
-
-std::vector<unsigned char> CryptoUtil::generateRandomKey(CryptoMode mode) {
-    size_t keySize = 0;
-    switch (mode) {
-        case CryptoMode::AES_256_CBC:
-        case CryptoMode::AES_256_ECB:
-            keySize = 32; break;
-        case CryptoMode::AES_128_CBC:
-        case CryptoMode::AES_128_ECB:
-            keySize = 16; break;
-        default:
-            throw std::invalid_argument("Unsupported crypto mode");
-    }
-
-    std::vector<unsigned char> key(keySize);
-    if (RAND_bytes(key.data(), static_cast<int>(keySize)) != 1) {
-        throw std::runtime_error("Failed to generate random key");
-    }
-    return key;
-}
-
-std::vector<unsigned char> CryptoUtil::generateRandomIV(CryptoMode mode) {
+std::vector<unsigned char> CryptoUtil::generateRandomIV(jade::JadeCryptoUtil::CryptoMode mode) {
     size_t ivSize = 0;
     switch (mode) {
-        case CryptoMode::AES_256_CBC:
-        case CryptoMode::AES_128_CBC:
+        case jade::JadeCryptoUtil::CryptoMode::AES_256_CBC:
+        case jade::JadeCryptoUtil::CryptoMode::AES_128_CBC:
             ivSize = 16; break;
-        case CryptoMode::AES_256_ECB:
-        case CryptoMode::AES_128_ECB:
+        case jade::JadeCryptoUtil::CryptoMode::AES_256_ECB:
+        case jade::JadeCryptoUtil::CryptoMode::AES_128_ECB:
             return {}; // ECB模式不需要IV
         default:
             throw std::invalid_argument("Unsupported crypto mode");

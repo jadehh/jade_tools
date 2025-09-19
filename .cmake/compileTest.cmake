@@ -1,0 +1,10 @@
+set(CMAKE_CXX_STANDARD 17)
+#遍历所有Cpp文件
+file(GLOB_RECURSE CPP_FILES test/src/*.cpp)
+foreach (filepath ${CPP_FILES})
+    string(REPLACE "${CMAKE_CURRENT_SOURCE_DIR}/" "" filename ${filepath})
+    list(APPEND test_sources_files ${filename})
+endforeach (filepath)
+include_directories(${CMAKE_CURRENT_SOURCE_DIR})
+add_library(jade_test STATIC ${test_sources_files})
+target_compile_options(jade_test PRIVATE  $<$<CXX_COMPILER_ID:MSVC>:/utf-8> )

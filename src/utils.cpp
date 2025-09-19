@@ -7,15 +7,14 @@
 # @Desc     : utils.cpp
 */
 //
-#include "include/utils.h"
-#include "include/logger.h"
+#include "include/jade_tools.h"
 #ifdef _WIN32
 #define NOMINMAX
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 #endif
 using namespace jade;
-
+#ifdef _WIN32
 void Utils::setConsole()
 {
     setConsoleUTF8();
@@ -37,6 +36,8 @@ void Utils::enableVirtualTerminal()
     dwMode |= ENABLE_VIRTUAL_TERMINAL_PROCESSING;
     SetConsoleMode(hOut, dwMode);
 }
+#endif
+
 
 
 

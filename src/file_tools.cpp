@@ -7,67 +7,76 @@
 # @Desc     : file_tools.cpp
 */
 //
-#include "include/file_tools.h"
-
+#include "include/jade_tools.h"
 #include <fstream>
 #include <iostream>
+#ifdef LOW_GCC
+#include <experimental/filesystem>
+using namespace std::experimental::filesystem;
+#else
+#include <filesystem>
+using namespace std::filesystem;
+#endif
+using namespace std;
 using namespace jade;
-bool FileTools::CreateDirectory(const std::string& path)
+
+bool FileTools::createDirectory(const std::string& path)
 {
     try {
-        const string fixedPath = FixPath(path);
+        const string fixedPath = fixPath(path);
         if (exists(fixedPath)) {
-            GetLastErrorRef() = "Directory already exists";
+            getLastErrorRef() = "Directory already exists";
             return false;
         }
         return create_directory(fixedPath);
     } catch (const std::exception& e) {
-        GetLastErrorRef() = e.what();
+        getLastErrorRef() = e.what();
         return false;
     }
 }
 
-bool FileTools::CreateDirectories(const std::string& path)
+bool FileTools::createDirectories(const std::string& path)
 {
     try {
-        const string fixedPath = FixPath(path);
+        const string fixedPath = fixPath(path);
         if (exists(fixedPath)) {
-            GetLastErrorRef() = "Directory already exists";
+            getLastErrorRef() = "Directory already exists";
             return false;
         }
         return create_directories(fixedPath);
     } catch (const std::exception& e) {
-        GetLastErrorRef() = e.what();
+        getLastErrorRef() = e.what();
         return false;
     }
 }
 
-bool FileTools::Exists(const std::string& path)
+bool FileTools::isExists(const std::string& path)
 {
     try {
-        const string fixedPath = FixPath(path);
+        const string fixedPath = fixPath(path);
         return exists(fixedPath) && is_directory(fixedPath);
     } catch (const std::exception& e) {
-        GetLastErrorRef() = e.what();
+        getLastErrorRef() = e.what();
         return false;
     }
 }
 
-bool FileTools::Remove(const string& path)
+
+bool FileTools::remove(const std::string& path)
 {
     try {
-        const string fixedPath = FixPath(path);
+        const string fixedPath = fixPath(path);
         if (!exists(fixedPath)) {
-            GetLastErrorRef() = "Directory does not exist";
+            getLastErrorRef() = "Directory does not exist";
             return false;
         }
         return remove_all(fixedPath) > 0;
     } catch (const std::exception& e) {
-        GetLastErrorRef() = e.what();
+        getLastErrorRef() = e.what();
         return false;
     }
 }
-string FileTools::FixPath(const string& path)
+string FileTools::fixPath(const std::string& path)
 {
 #ifdef _WIN32
     std::string fixed = path;
@@ -78,17 +87,26 @@ string FileTools::FixPath(const string& path)
 #endif
 }
 
-string FileTools::GetLastError()
+string FileTools::getLastError()
 {
-    return GetLastErrorRef();
+    return getLastErrorRef();
 }
 
 
-vector<string> FileTools::getImageFiles(const string& path, const bool fullPath)
+vector<string> FileTools::getImageFiles(const std::string& path, const bool fullPath)
 {
     std::vector<std::string> imageFiles;
     try {
-        for (const auto& entry : directory_iterator(u8path(FixPath(path)))) {
+        for (const auto& entry : directory_iterator(u8path(fixPath(path)))) {
+#ifdef LOW_GCC
+            if (is_regular_file(entry) && isImageFile(entry.path().u8string())) {
+                if (fullPath) {
+                    imageFiles.push_back(entry.path().u8string());
+                } else {
+                    imageFiles.push_back(entry.path().filename().u8string());
+                }
+            }
+#else
             if (entry.is_regular_file() && isImageFile(entry.path().u8string())) {
                 if (fullPath) {
                     imageFiles.push_back(entry.path().u8string());
@@ -96,14 +114,17 @@ vector<string> FileTools::getImageFiles(const string& path, const bool fullPath)
                     imageFiles.push_back(entry.path().filename().u8string());
                 }
             }
+#endif
+
+
         }
     } catch (const filesystem_error& e) {
-        GetLastErrorRef() = e.what();
+        getLastErrorRef() = e.what();
     }
     return imageFiles;
 }
 
-bool FileTools::writeBinaryToFile(const string& path, const float* data, const int size)
+bool FileTools::writeBinaryToFile(const std::string& path, const float* data, const int size)
 {
     // 写入二进制文件
     std::ofstream outFile(path, ios::out | ios::binary);
@@ -115,7 +136,7 @@ bool FileTools::writeBinaryToFile(const string& path, const float* data, const i
     return true;
 }
 
-bool FileTools::writeBinaryToFile(const string& path, const char* data, const int size)
+bool FileTools::writeBinaryToFile(const std::string& path, const char* data, const int size)
 {
     // 写入二进制文件
     std::ofstream outFile(path, ios::out | ios::binary);

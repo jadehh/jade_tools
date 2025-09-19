@@ -16,6 +16,14 @@
 #include <sstream>
 #include <chrono>
 #include <mutex>
+#ifdef _WIN32
+#include <Windows.h>
+#else
+#include <locale>
+#include <codecvt>
+#endif
+
+using namespace std;
 namespace jade
 {
     const char* getVersion()
@@ -60,7 +68,7 @@ namespace jade
                 if (row.size() != colCount) continue;
                 for (int i = 0; i < colCount; ++i)
                 {
-                    if (row[i].length() > colWidths[i])
+                    if (static_cast<int>(row[i].length()) > colWidths[i])
                     {
                         colWidths[i] = static_cast<int>(row[i].length());
                     }
@@ -117,7 +125,7 @@ namespace jade
     bool isImageFile(const string& path)
     {
         string ext = path.substr(path.find_last_of('.') + 1);
-        std::transform(ext.begin(), ext.end(), ext.begin(), tolower);
+        std::transform(ext.begin(), ext.end(), ext.begin(), static_cast<int(*)(int)>(tolower));
         return ext == "jpg" || ext == "jpeg" || ext == "png" ||
             ext == "bmp" || ext == "gif" || ext == "tiff" ||
             ext == "webp" || ext == "svg";
@@ -139,6 +147,7 @@ namespace jade
         return oss.str();
     }
 
+#ifdef _WIN32
     std::string formatBytes(const SIZE_T bytes)
     {
         const char* suffixes[] = {"B", "KB", "MB", "GB"};
@@ -158,6 +167,14 @@ namespace jade
     {
         return static_cast<double>(bytes) / (1024*1024);
     }
+
+    std::string to_hex_string(const DWORD code)
+    {
+        char buffer[11]; // 足够存放"0x" + 8位十六进制数 + 结束符
+        snprintf(buffer, sizeof(buffer), "0x%08X", code);
+        return buffer;
+    }
+#endif
 
     std::string getOperatingSystemName()
     {
@@ -192,20 +209,117 @@ namespace jade
 #if defined(_WIN32) || defined(_WIN64)
         localtime_s(&result, &time);  // Windows安全版本
 #else
-        tm = *std::localtime(&time); // 非Windows平台
+       localtime_r(&time, &result); // 非Windows平台
 #endif
         // 构造扩展时间对象
         result.tm_millis = static_cast<int>(millis.count());
         return result;
     }
 
-    std::string getTimeStampString(const char *fmt_arg)
+    std::string timePointToTimeString(const std::chrono::time_point<std::chrono::system_clock> clock,const char *fmt_arg,const bool with_milliseconds)
+    {
+        // 使用静态互斥锁保证线程安全
+        static std::mutex mtx;
+        jade_time result{};
+        std::lock_guard lock(mtx);
+        // 1. 转换为秒级精度
+        const auto seconds = std::chrono::time_point_cast<std::chrono::seconds>(clock);
+        const auto fraction = clock - seconds; // 获取小数部分
+        // 2. 转换为本地时间
+        auto t = std::chrono::system_clock::to_time_t(seconds);
+        const auto millis = std::chrono::duration_cast<std::chrono::milliseconds>(fraction) % 1000;
+#if defined(_WIN32) || defined(_WIN64)
+        localtime_s(&result,&t);  // Windows安全版本
+#else
+        localtime_r(&t, &result); // 非Windows平台
+#endif
+        // 构造扩展时间对象
+        result.tm_millis = static_cast<int>(millis.count());
+        return getTimeStampString(result,fmt_arg,with_milliseconds);
+
+    }
+
+    std::string getTimeStampString(const jade_time& time,const char *fmt_arg,const bool with_milliseconds)
     {
         std::ostringstream oss;
-        const jade_time local_time = getTimeStamp();    // 获取毫秒部分
-        oss << std::put_time(&local_time, fmt_arg)<< "." << std::setfill('0') << std::setw(3) << local_time.tm_millis;
+        oss << std::put_time(&time, fmt_arg);
+        if (with_milliseconds){
+            oss << "." << std::setfill('0') << std::setw(3) << time.tm_millis;
+        }
         return oss.str();
     }
 
+    std::string getTimeStampString(const char *fmt_arg, const bool with_milliseconds)
+    {
+        return getTimeStampString(getTimeStamp(),fmt_arg,with_milliseconds);
+    }
 
+    std::wstring string_to_wstring(const std::string& str)
+    {
+#ifdef _WIN32
+        if (str.empty()) return L"";
+
+        const int size_needed = MultiByteToWideChar(
+            CP_UTF8, 0,
+            str.c_str(), static_cast<int>(str.size()),
+            nullptr, 0
+        );
+
+        std::wstring result(size_needed, 0);
+        MultiByteToWideChar(
+            CP_UTF8, 0,
+            str.c_str(), static_cast<int>(str.size()),
+            &result[0], size_needed
+        );
+
+        return result;
+#else
+        if (str.empty()) return L"";
+
+        try {
+            std::wstring_convert<std::codecvt_utf8<wchar_t>> converter;
+            return converter.from_bytes(str);
+        } catch (...) {
+            return L"";
+        }
+#endif
+    }
+
+    std::string wstring_to_string(const std::wstring& w_str)
+    {
+#ifdef _WIN32
+        if (w_str.empty()) return "";
+
+        const int size_needed = WideCharToMultiByte(
+            CP_UTF8, 0,
+            w_str.c_str(), static_cast<int>(w_str.size()),
+            nullptr, 0, nullptr, nullptr
+        );
+
+        std::string result(size_needed, 0);
+        WideCharToMultiByte(
+            CP_UTF8, 0,
+            w_str.c_str(), static_cast<int>(w_str.size()),
+            &result[0], size_needed,
+            nullptr, nullptr
+        );
+
+        return result;
+#else
+        if (w_str.empty()) return "";
+
+        try {
+            std::wstring_convert<std::codecvt_utf8<wchar_t>> converter;
+            return converter.to_bytes(w_str);
+        } catch (...) {
+            return "";
+        }
+#endif
+
+    }
+
+    void jadeToolsClean()
+    {
+        SqliteHelper::getInstance().close();
+    }
 } // namespace jade
