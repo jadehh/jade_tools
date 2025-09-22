@@ -56,7 +56,8 @@ void DynamicSystemMonitor::monitorLoop(const int interval_ms)
 
 void DynamicSystemMonitor::start(const std::string& name, int interval_ms, size_t max_history)
 {
-    if (running_) return;
+    if (running_)
+        return;
     running_ = true;
     max_history_ = max_history;
     monitor_thread_ = std::thread(&DynamicSystemMonitor::monitorLoop, this, interval_ms);
@@ -74,7 +75,8 @@ void DynamicSystemMonitor::setUpdateCallback(
 
 void DynamicSystemMonitor::stop()
 {
-    if (!running_) return;
+    if (!running_)
+        return;
     snapshots_.clear();
     running_ = false;
     cv_.notify_all();
@@ -88,4 +90,3 @@ DynamicSystemMonitor::~DynamicSystemMonitor()
 {
     stop();
 }
-

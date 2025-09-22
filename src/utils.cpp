@@ -37,7 +37,3 @@ void Utils::enableVirtualTerminal()
     SetConsoleMode(hOut, dwMode);
 }
 #endif
-
-
-
-

@@ -22,10 +22,10 @@ docker build -t jadehh/jade-tools:1.0.3-opencv-4.5.0-cuda-11.8.0-cudnn8-devel-ub
 * 高版本的显卡无法使用低版本的镜像，因为低版本的显卡驱动不兼容
 * 低版本的显卡可以通过显卡驱动升级的办法使用最新的镜像，如果不做升级，只能使用旧的Docker镜像 
 * 显卡驱动的cuda去匹配对应的镜像
+
 ## 启动
 ```bash
-docker run  --name devel -v ${PWD}:/app -it -w /app jadehh/jade-tools:1.0.3-opencv-4.3.0-cuda-10.0-cudnn7-devel-ubuntu18.04 
-
+docker run  --gpus=all --name devel -v ${PWD}:/app -v C:\Windows\System32\lxss\lib\libnvcuvid.so:/usr/lib/x86_64-linux-gnu/libnvcuvid.so -v C:\Windows\System32\lxss\lib\libnvidia-encode.so:/usr/lib/x86_64-linux-gnu/libnvidia-encode.so  -d   jadehh/jade-tools:1.0.3-opencv-4.3.0-cuda-10.0-cudnn7-devel-ubuntu18.04  bash -c "cd /app/cmake-build-debug-docker && ./examples" 
 ```
 
 > 使用同一套代码，只区分镜像，代码里面自动判断当前cuda的版本去使用

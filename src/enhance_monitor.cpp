@@ -29,6 +29,7 @@ namespace jade
     {
     public:
         DynamicSystemMonitorImpl() = default;
+
         ~DynamicSystemMonitorImpl()
         {
             monitor.reset();
@@ -38,7 +39,9 @@ namespace jade
 }
 
 using namespace jade;
-EnhancedTimeProfiler::EnhancedTimeProfiler(): dynamic_system_monitor_impl_(new DynamicSystemMonitorImpl())
+
+EnhancedTimeProfiler::EnhancedTimeProfiler():
+    dynamic_system_monitor_impl_(new DynamicSystemMonitorImpl())
 {
 }
 
@@ -65,11 +68,13 @@ void EnhancedTimeProfiler::endStep(const std::string& stepName, const int count)
     // std::cout << "count:" << count << "history size:"<< dynamicSystemMonitor->getHistory().size() << std::endl;
     count_ = count;
     auto& steps = dynamic_system_monitor_impl_->monitor->stepData[stepName];
-    if (steps.empty()) return;
+    if (steps.empty())
+        return;
     auto& [startTime, duration,metrics] = steps.back();
     const auto endTime = std::chrono::high_resolution_clock::now();
     duration = std::chrono::duration_cast<std::chrono::milliseconds>(endTime - startTime);
-    metrics.assign(dynamic_system_monitor_impl_->monitor->getHistory().begin(), dynamic_system_monitor_impl_->monitor->getHistory().end());
+    metrics.assign(dynamic_system_monitor_impl_->monitor->getHistory().begin(),
+                   dynamic_system_monitor_impl_->monitor->getHistory().end());
     dynamic_system_monitor_impl_->monitor->stop();
 }
 
@@ -78,7 +83,8 @@ std::vector<SystemMonitorImpl::ResourceMetrics> EnhancedTimeProfiler::extractMid
 {
     const int n = static_cast<int>(arr.size());
     // 处理空数组情况
-    if (n == 0) return {};
+    if (n == 0)
+        return {};
     // 计算要取的元素数量 x（至少1个，最多n个）
     const int x = std::max(1, n / 3);
     // 计算起始位置（确保左右两侧数量最多相差1）
@@ -96,7 +102,8 @@ std::vector<std::vector<std::string>> EnhancedTimeProfiler::getDatas() const
     std::vector<std::vector<std::string>> datas = {};
     for (const auto& [name, metricsList] : dynamic_system_monitor_impl_->monitor->stepData)
     {
-        if (metricsList.empty()) continue;
+        if (metricsList.empty())
+            continue;
         // 计算各指标的平均值
         double totalTime = 0;
         double totalCPU = 0;

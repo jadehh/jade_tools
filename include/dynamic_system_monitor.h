@@ -19,23 +19,27 @@
 
 #include "jade_tools.h"
 
-class  DynamicSystemMonitor
+class DynamicSystemMonitor
 {
 public:
-    std::vector<std::string> headers = {"步骤名称", "调用次数", "总耗时(s)", "平均耗时(ms)","CPU(%)","内存(MB)","磁盘读取(MB/s)","磁盘写入(MB/s)", "GPU(%)","显存(MB)"};
+    std::vector<std::string> headers = {
+        "步骤名称", "调用次数", "总耗时(s)", "平均耗时(ms)", "CPU(%)", "内存(MB)", "磁盘读取(MB/s)", "磁盘写入(MB/s)", "GPU(%)", "显存(MB)"
+    };
+
     struct StepMetrics
     {
         std::chrono::time_point<std::chrono::high_resolution_clock> startTime;
         std::chrono::milliseconds duration{0};
         std::vector<jade::SystemMonitorImpl::ResourceMetrics> metricsList;
     };
+
     std::unordered_map<std::string, std::vector<StepMetrics>> stepData;
     // 资源数据存储结构
     jade::SystemMonitorImpl::ResourceMetrics metrics = {};
-    DynamicSystemMonitor()= default;
+    DynamicSystemMonitor() = default;
     ~DynamicSystemMonitor();
     // 启动监控线程 如果CPU资源占满会影响线程的速度
-    void start(const std::string& name,int interval_ms = 100, size_t max_history = 100);
+    void start(const std::string& name, int interval_ms = 100, size_t max_history = 100);
     // 停止监控线程
     void stop();
     // 获取当前最新快照
@@ -44,6 +48,7 @@ public:
     std::deque<jade::SystemMonitorImpl::ResourceMetrics> getHistory() const;
     // 注册回调函数
     void setUpdateCallback(const std::function<void(const jade::SystemMonitorImpl::ResourceMetrics&)>& callback);
+
 private:
     // 监控循环
     void monitorLoop(int interval_ms);

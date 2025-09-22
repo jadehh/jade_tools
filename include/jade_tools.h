@@ -17,7 +17,6 @@
 #include <map>
 #include <set>
 #include <thread>
-#include <utility>
 #include <variant>
 #include <vector>
 #ifdef _WIN32
@@ -44,7 +43,7 @@
 #    define OPENCV_ENABLED 1
 #if defined(__has_include)
 #if __has_include(<opencv2/cudacodec.hpp>) // 标准化的头文件存在性检查
-    #include <opencv2/cudacodec.hpp>
+#include <opencv2/cudacodec.hpp>
 #define OPENCV_CUDA_ENABLED 1
 #endif
 #endif
@@ -53,7 +52,6 @@
 
 #if defined(__has_include)
 #if __has_include(<hasp_api.h>) // 标准化的头文件存在性检查
-#include <hasp_api.h>
 #define HASP_ENABLED 1
 #endif
 #endif
@@ -66,7 +64,6 @@ namespace jade
     {
         int tm_millis;
     };
-
 
 
     JADE_API const char* getVersion();
@@ -140,11 +137,10 @@ namespace jade
      * @return
      */
     jade_time getTimeStamp();
-    std::string getTimeStampString(const jade_time& time, const char* fmt_arg = "[%Y-%m-%d %H:%M:%S]",
-                                   bool with_milliseconds = false);
+    std::string getTimeStampString(const jade_time& time, const char* fmt_arg = "[%Y-%m-%d %H:%M:%S]", bool with_milliseconds = false);
     std::string getTimeStampString(const char* fmt_arg = "[%Y-%m-%d %H:%M:%S]", bool with_milliseconds = false);
-    std::string timePointToTimeString(std::chrono::time_point<std::chrono::system_clock> clock,
-                                      const char* fmt_arg = "[%Y-%m-%d %H:%M:%S]", bool with_milliseconds = false);
+    std::string timePointToTimeString(std::chrono::time_point<std::chrono::system_clock> clock, const char* fmt_arg = "[%Y-%m-%d %H:%M:%S]",
+                                      bool with_milliseconds = false);
 
     /**
      * 资源清理函数
@@ -235,13 +231,12 @@ namespace jade
         void warn(const std::string& message, const char* file = "", int line = 0) const;
         void error(const std::string& message, const char* file = "", int line = 0) const;
         void critical(const std::string& message, int exitCode, const char* file = "", int line = 0) const;
-        void exception(const std::string& message, const std::string& e, int exitCode, const char* file = "",
-                       int line = 0) const;
+        void exception(const std::string& message, const std::string& e, int exitCode, const char* file = "", int line = 0) const;
 
         // 设置日志级别
         void setLevel(Level level) const;
         // 关闭日志
-        void shutDown() const;
+        void shutDown() ;
         // 设置DLLName
         static void setDllName(const std::string& dllName);
 
@@ -503,7 +498,7 @@ namespace jade
         // 执行SQL命令（线程安全）
         [[nodiscard]] bool execute(const std::string& sql) const;
         [[nodiscard]] bool executeWithParams(const std::string& sql, const std::vector<SQLiteValue>& params) const;
-        void close() const;
+        void close() ;
 
     private:
         SqliteHelper();
@@ -604,7 +599,7 @@ namespace jade
         SocketServer& operator=(const SocketServer&) = delete;
         void init(int port, const MessageHandler& handler);
         void start() const;
-        void stop() const;
+        void stop() ;
 
     private:
         SocketServer();
@@ -619,17 +614,14 @@ namespace jade
     class JADE_API ApplicationController
     {
     private:
-        ApplicationController();
         class Impl;
         Impl* impl_;
-
+        ApplicationController();
     public:
         static ApplicationController& getInstance();
         void run() const;
-        void stop() const;
+        void stop();
         // 禁止拷贝和赋值
-        ApplicationController(const ApplicationController&) = delete;
-        ApplicationController& operator=(const ApplicationController&) = delete;
     };
 
     /** HaspAdapter
@@ -657,7 +649,7 @@ namespace jade
         static HaspAdapter& getInstance();
         void init(HaspAdapterDevice device, const std::vector<int>& haspIdList = {});
         void run() const;
-        void shutDown() const;
+        void shutDown() ;
         // 禁止拷贝和赋值
         HaspAdapter(const HaspAdapter&) = delete;
         HaspAdapter& operator=(const HaspAdapter&) = delete;
@@ -668,55 +660,61 @@ namespace jade
     * ######################################VideoCapture###################################
     */
 #ifdef  OPENCV_ENABLED
-    class JADE_API VideoCaptureBase {
+    class JADE_API VideoCaptureBase
+    {
     private:
         class Impl;
         Impl* impl_;
+
     public:
-        explicit VideoCaptureBase(const std::string &source,bool use_gpu,int frame_interval);
-        void start() ;
+        explicit VideoCaptureBase(const std::string& source, bool use_gpu, int frame_interval);
+        void start();
         void stop() const;
         virtual std::string getVideoInfo() const = 0;
         virtual ~VideoCaptureBase() = default;
-        virtual void process(cv::Mat & frame) = 0;
+        virtual void process(cv::Mat& frame) = 0;
 #ifdef OPENCV_CUDA_ENABLED
         virtual void process(cv::cuda::GpuMat& gpu_mat) = 0;
 #endif
-
     };
 
-    class RtspVideoCapture final : public VideoCaptureBase{
-
+    class RtspVideoCapture final : public VideoCaptureBase
+    {
     public:
-        enum class RtspDeviceType {
-            UNKNOWN,      // 未知设备
-            HIKVISION,    // 海康威视
-            DAHUA,        // 大华
+        enum class RtspDeviceType
+        {
+            UNKNOWN, // 未知设备
+            HIKVISION, // 海康威视
+            DAHUA, // 大华
             ONVIF_GENERIC // 通用ONVIF设备
         };
+
         // 流类型枚举（主码流、子码流等）
-        enum class RtspStreamType {
-            MAIN_STREAM,  // 主码流（高清）
-            SUB_STREAM,   // 子码流（标清）
+        enum class RtspStreamType
+        {
+            MAIN_STREAM, // 主码流（高清）
+            SUB_STREAM, // 子码流（标清）
             THIRD_STREAM, // 第三码流
-            AUDIO_STREAM  // 音频流
+            AUDIO_STREAM // 音频流
         };
-        struct RtspInfo {
-            std::string camera_name;    // 相机名称
-            std::string username;       // 用户名
-            std::string password;       // 密码
-            std::string ip_address;     // IP地址或域名
-            int port;                   // 端口号，默认为554
-            std::string stream_path;    // 流路径
-            bool use_gpu;               //是否使用GPU解码
-            int frame_interval;         // 参数含义, 每5帧中，你只处理第1帧（或任意指定的一帧），跳过中间的4帧。
+
+        struct RtspInfo
+        {
+            std::string camera_name; // 相机名称
+            std::string username; // 用户名
+            std::string password; // 密码
+            std::string ip_address; // IP地址或域名
+            int port; // 端口号，默认为554
+            std::string stream_path; // 流路径
+            bool use_gpu; //是否使用GPU解码
+            int frame_interval; // 参数含义, 每5帧中，你只处理第1帧（或任意指定的一帧），跳过中间的4帧。
             RtspDeviceType device_type; // 设备类型
             // 构造函数
             RtspInfo();
-            RtspInfo(const std::string &camera_name, const std::string &user,
-                            const std::string &pwd, const std::string &ip, int port_num = 554,
-                            const std::string &path = "",bool use_gpu=false,int frame_interval=5,
-                            RtspDeviceType type = RtspDeviceType::UNKNOWN);
+            RtspInfo(const std::string& camera_name, const std::string& user,
+                     const std::string& pwd, const std::string& ip, int port_num = 554,
+                     const std::string& path = "", bool use_gpu = false, int frame_interval = 5,
+                     RtspDeviceType type = RtspDeviceType::UNKNOWN);
 
             [[nodiscard]] std::string toRtspUrl() const;
             // 根据设备类型获取默认流路径
@@ -724,41 +722,47 @@ namespace jade
             // 获取设备类型字符串
             [[nodiscard]] std::string getDeviceTypeString() const;
             // 设置设备类型（支持从字符串设置）
-            void setDeviceTypeFromString(const std::string &type_str);
+            void setDeviceTypeFromString(const std::string& type_str);
             // 检查连接信息是否有效
             [[nodiscard]] bool isValid() const;
             // 清空所有信息
             void clear();
-            };
+        };
+
         // 流路径工具类
-        class RtspPathHelper {
+        class RtspPathHelper
+        {
         public:
             // 获取海康设备流路径
-            static std::string getHikvisionPath(RtspStreamType stream_type = RtspStreamType::MAIN_STREAM,int channel = 1);
+            static std::string getHikvisionPath(RtspStreamType stream_type = RtspStreamType::MAIN_STREAM,
+                                                int channel = 1);
             // 获取大华设备流路径
-            static std::string getDahuaPath(RtspStreamType stream_type = RtspStreamType::MAIN_STREAM,int channel = 1) ;
-                // 根据设备类型获取流路径
-            static std::string getPathByDeviceType(RtspDeviceType device_type,RtspStreamType stream_type = RtspStreamType::MAIN_STREAM,int channel = 1);
-            };
+            static std::string getDahuaPath(RtspStreamType stream_type = RtspStreamType::MAIN_STREAM, int channel = 1);
+            // 根据设备类型获取流路径
+            static std::string getPathByDeviceType(RtspDeviceType device_type,
+                                                   RtspStreamType stream_type = RtspStreamType::MAIN_STREAM,
+                                                   int channel = 1);
+        };
+
     private:
         RtspInfo rtsp_info_;
 
     public:
         //定义回调函数
-        using CpuFrameCallback = std::function<void(RtspInfo, const cv::Mat &)>;
-        explicit RtspVideoCapture(const RtspInfo & rtsp_info,
-                                  CpuFrameCallback  cpu_frame_callback);
+        using CpuFrameCallback = std::function<void(RtspInfo, const cv::Mat&)>;
+        explicit RtspVideoCapture(const RtspInfo& rtsp_info,
+                                  CpuFrameCallback cpu_frame_callback);
 
 #ifdef OPENCV_CUDA_ENABLED
         using GpuFrameCallback = std::function<void(RtspInfo, cv::cuda::GpuMat& gpu_mat)>;
-        explicit RtspVideoCapture(const RtspInfo & rtsp_info,
-                                  GpuFrameCallback  gpu_frame_callback);
-        explicit RtspVideoCapture(const RtspInfo & rtsp_info,
-                                  CpuFrameCallback  cpu_frame_callback,
-                                  const GpuFrameCallback & gpu_frame_callback);
+        explicit RtspVideoCapture(const RtspInfo& rtsp_info,
+                                  GpuFrameCallback gpu_frame_callback);
+        explicit RtspVideoCapture(const RtspInfo& rtsp_info,
+                                  CpuFrameCallback cpu_frame_callback,
+                                  const GpuFrameCallback& gpu_frame_callback);
 
 #endif
-        void process(cv::Mat &frame) override ;
+        void process(cv::Mat& frame) override;
 #ifdef OPENCV_CUDA_ENABLED
         void process(cv::cuda::GpuMat& gpu_mat) override;
 #endif
@@ -772,21 +776,23 @@ namespace jade
 #endif
     };
 
-    class MultiRtspManager {
+    class MultiRtspManager
+    {
         class Impl;
         Impl* impl_;
         MultiRtspManager();
+
     public:
         using CpuFrameCallback = RtspVideoCapture::CpuFrameCallback;
-        void init(const CpuFrameCallback &cpu_callback);
+        void init(const CpuFrameCallback& cpu_callback);
 #ifdef OPENCV_CUDA_ENABLED
         using GpuFrameCallback = RtspVideoCapture::GpuFrameCallback;
-        void init(const GpuFrameCallback &gpu_callback);
-        void init(const CpuFrameCallback& cpu_callback,const GpuFrameCallback& gpu_callback);
+        void init(const GpuFrameCallback& gpu_callback);
+        void init(const CpuFrameCallback& cpu_callback, const GpuFrameCallback& gpu_callback);
 #endif
-        static MultiRtspManager &getInstance();
-        void addStream(const RtspVideoCapture::RtspInfo &rtsp_info) const;
-        void stopAll() const;
+        static MultiRtspManager& getInstance();
+        void addStream(const RtspVideoCapture::RtspInfo& rtsp_info) const;
+        void stopAll();
         // 禁止拷贝和赋值
         MultiRtspManager(const MultiRtspManager&) = delete;
         MultiRtspManager& operator=(const MultiRtspManager&) = delete;
@@ -820,5 +826,3 @@ namespace jade
 
 #define LOG_EXCEPTION(exitCode,ex) jade::LoggerStream(jade::Logger::Level::S_EXCEPTION,__FILE__,__LINE__,exitCode,ex)
 #define DLL_EXCEPTION(module,exitCode,ex) jade::DLLLoggerStream(jade::Logger::Level::S_EXCEPTION, __FILE__, __LINE__,module,exitCode,ex)
-
-

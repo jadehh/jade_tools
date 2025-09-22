@@ -31,7 +31,7 @@ void workerTask(const int id)
             if (!db.executeWithParams(
                 "INSERT INTO users (name, age) VALUES (?, ?);",
                 {"User" + std::to_string(id), std::to_string(20 + id)}
-            ))
+                ))
             {
                 LOG_WARN() << "Failed to insert users";
             }
@@ -60,24 +60,21 @@ void testSqlite3()
 
     jade::SqliteHelper::getInstance().init("threadsafe.db");
     // 创建表
-    const bool status = jade::SqliteHelper::getInstance().execute("CREATE TABLE IF NOT EXISTS users ("
-        "id INTEGER PRIMARY KEY AUTOINCREMENT,"
-        "name TEXT NOT NULL,"
-        "age INTEGER);");
-    if (status)
+    if (const bool status = jade::SqliteHelper::getInstance().execute("CREATE TABLE  IF NOT EXISTS users (id INTEGER PRIMARY KEY AUTOINCREMENT,name TEXT NOT NULL,age INTEGER)"); !status)
     {
-        // 创建多个工作线程
-        std::vector<std::thread> threads;
-        threads.reserve(1);
-        for (int i = 0; i < 1; ++i)
-        {
-            threads.emplace_back(workerTask, i);
-        }
-        // 等待所有线程完成
-        for (auto& t : threads)
-        {
-            t.join();
-        }
+        LOG_WARN() << "Failed to create table";
+    }
+    // 创建多个工作线程
+    std::vector<std::thread> threads;
+    threads.reserve(1);
+    for (int i = 0; i < 1; ++i)
+    {
+        threads.emplace_back(workerTask, i);
+    }
+    // 等待所有线程完成
+    for (auto& t : threads)
+    {
+        t.join();
     }
     LOG_INFO() << "=====================================Sqlite3 测试结束" << "=====================================";
 }

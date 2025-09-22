@@ -14,4 +14,3 @@
 #include "include/testINIReader.h"
 #include "include/testHaspAdapter.h"
 #include "include/testOpencv.h"
-

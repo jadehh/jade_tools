@@ -1,7 +1,6 @@
 #include "include/jade_tools.h"
 #include <atomic>
 #include <csignal>
-#include <iostream>
 #include <mutex>
 #include <condition_variable>
 #include <thread>
@@ -14,29 +13,43 @@
 #include <termios.h>
 #include <fcntl.h>
 #endif
-
+#define MODULE_NAME "ApplicationController"
 using namespace jade;
 
 // PImpl 实现类
-class ApplicationController::Impl {
+class ApplicationController::Impl
+{
 public:
-    explicit Impl() : shouldExit_(false) {
+    explicit Impl() :  shouldExit_(false)
+    {
         setupSignalHandling();
         startKeyListener(); // 启动键盘监听线程
     }
 
-    void stop()
+    ~ Impl()
     {
-        cleanup();
+        // 平台特定的清理
+        platformSpecificCleanup();
+
+        // 确保退出标志被设置
+        requestExit();
+
+        // 停止键盘监听线程
+        if (keyListenerThread_.joinable())
+        {
+            keyListenerThread_.join();
+        }
     }
 
-    void run() {
+    void run()
+    {
         // 主线程等待退出信号
         waitForExit();
     }
 
 private:
-    void setupSignalHandling() {
+    void setupSignalHandling()
+    {
         // 设置信号处理
         std::signal(SIGINT, handleSignal);
         std::signal(SIGTERM, handleSignal);
@@ -45,20 +58,9 @@ private:
         platformSpecificSetup();
     }
 
-    void cleanup() {
-        // 平台特定的清理
-        platformSpecificCleanup();
 
-        // 确保退出标志被设置
-        requestExit();
-
-        // 停止键盘监听线程
-        if (keyListenerThread_.joinable()) {
-            keyListenerThread_.join();
-        }
-    }
-
-    void requestExit() {
+    void requestExit()
+    {
         shouldExit_ = true;
         {
             std::lock_guard lock(exitMutex_);
@@ -67,21 +69,26 @@ private:
         exitCondition_.notify_all();
     }
 
-    void waitForExit() {
+    void waitForExit()
+    {
         std::unique_lock<std::mutex> lock(exitMutex_);
         exitCondition_.wait(lock, [this] { return exitRequested_; });
     }
 
-    static void handleSignal(const int signal) {
-        if (signal == SIGINT || signal == SIGTERM) {
+    static void handleSignal(const int signal)
+    {
+        if (signal == SIGINT || signal == SIGTERM)
+        {
             // 获取当前实例（如果有）
-            if (Impl* instance = currentInstance_.load()) {
+            if (Impl* instance = currentInstance_.load())
+            {
                 instance->requestExit();
             }
         }
     }
 
-    void platformSpecificSetup() {
+    void platformSpecificSetup()
+    {
         // 保存当前实例指针
         currentInstance_ = this;
 
@@ -89,7 +96,7 @@ private:
         // 添加控制台事件处理程序
         if (!SetConsoleCtrlHandler(windowsCtrlHandler, TRUE)) {
             // 输出错误信息
-            std::cerr << "SetConsoleCtrlHandler failed: " << GetLastError() << std::endl;
+            DLL_LOG_ERROR(MODULE_NAME)<< "设置控制台时间失败  ";
         }
 
         // 禁用快速编辑模式，确保 Ctrl+C 正常工作
@@ -107,7 +114,8 @@ private:
 #endif
     }
 
-    static void platformSpecificCleanup() {
+    static void platformSpecificCleanup()
+    {
 #ifdef _WIN32
         // 清理Windows控制台事件处理
         SetConsoleCtrlHandler(windowsCtrlHandler, FALSE);
@@ -132,13 +140,16 @@ private:
         return FALSE;
     }
 #endif
-
     // 启动键盘监听线程
-    void startKeyListener() {
-        keyListenerThread_ = std::thread([this] {
-            while (!shouldExit_) {
-                if (checkForEnterKey()) {
-                    DLL_LOG_DEBUG("ApplicationController") << "检测到Enter键按下，程序将退出...";
+    void startKeyListener()
+    {
+        keyListenerThread_ = std::thread([this]
+        {
+            while (!shouldExit_)
+            {
+                if (checkForEnterKey())
+                {
+                    DLL_LOG_TRACE("ApplicationController") << "检测到Enter键按下，程序将退出...";
                     requestExit();
                     break;
                 }
@@ -148,7 +159,8 @@ private:
     }
 
     // 检查是否按下Enter键
-    static bool checkForEnterKey() {
+    static bool checkForEnterKey()
+    {
 #ifdef _WIN32
         // Windows实现
         if (_kbhit()) {
@@ -172,7 +184,8 @@ private:
         tcsetattr(STDIN_FILENO, TCSANOW, &old_t);
         fcntl(STDIN_FILENO, F_SETFL, old_f);
 
-        if (ch != EOF && (ch == '\r' || ch == '\n')) {
+        if (ch != EOF && (ch == '\r' || ch == '\n'))
+        {
             return true;
         }
 #endif
@@ -193,29 +206,35 @@ private:
 
 // 初始化静态成员
 std::atomic<ApplicationController::Impl*> ApplicationController::Impl::currentInstance_{nullptr};
-ApplicationController & ApplicationController::getInstance()
+
+
+
+// ApplicationController 成员函数实现
+ApplicationController::ApplicationController():impl_(new Impl())
 {
-    static  ApplicationController instance;
+}
+
+ApplicationController& ApplicationController::getInstance()
+{
+    static ApplicationController instance;
     return instance;
 }
 
-// ApplicationController 成员函数实现
-ApplicationController::ApplicationController(): impl_(new Impl())
+void ApplicationController::run() const
 {
-}
-
-
-void ApplicationController::run() const {
-    if (impl_) {
+    if (impl_)
+    {
         // 提示用户如何退出
         impl_->run();
     }
 }
 
-void ApplicationController::stop() const
+void ApplicationController::stop()
 {
     if (impl_)
     {
-        impl_->stop();
+        delete impl_;
+        impl_ = nullptr;
     }
 }
+

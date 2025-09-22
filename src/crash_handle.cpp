@@ -31,10 +31,12 @@ namespace fs = std::filesystem;
 #endif
 
 #define MODULE_NAME "CrashHandler"
+
 // Pimpl 实现类
-class CrashHandler::Impl {
+class CrashHandler::Impl
+{
 public:
-    explicit Impl(const std::string& dump_path,const std::function<void()>& func)
+    explicit Impl(const std::string& dump_path, const std::function<void()>& func)
     {
         // 注册全局异常事件
         dump_path_ = dump_path;
@@ -66,34 +68,41 @@ public:
             descriptor,
             nullptr, // 过滤器回调
             dumpCallback,
-            this,    // 回调上下文
-            true,    // 安装信号处理器
-            -1       // 挂起线程的堆栈大小（-1 使用默认值）
-        );
+            this, // 回调上下文
+            true, // 安装信号处理器
+            -1 // 挂起线程的堆栈大小（-1 使用默认值）
+            );
 #endif
     }
+
     ~Impl()
     {
+        delete handler_;
         DLL_LOG_TRACE(MODULE_NAME) << "关闭崩溃监听";
     }
+
     // 添加自定义信息
-    void setCustomInfo(const std::string& key, const std::string& value) {
+    void setCustomInfo(const std::string& key, const std::string& value)
+    {
         std::lock_guard<std::mutex> lock(custom_info_mutex_);
         custom_info_[key] = value;
     }
 
     // 清除自定义信息
-    void clearCustomInfo() {
+    void clearCustomInfo()
+    {
         std::lock_guard<std::mutex> lock(custom_info_mutex_);
         custom_info_.clear();
     }
 
     // 触发测试崩溃
-    static void triggerTestCrash() {
+    static void triggerTestCrash()
+    {
         // 触发一个访问违例崩溃
         volatile int* ptr = nullptr;
         *ptr = 42;
     }
+
 private:
     google_breakpad::ExceptionHandler* handler_ = nullptr;
     std::map<std::string, std::string> custom_info_;
@@ -101,20 +110,24 @@ private:
     std::string dump_path_;
     std::function<void()> func_;
 
-    static std::string removeDmpSuffix(const std::string& filename) {
+    static std::string removeDmpSuffix(const std::string& filename)
+    {
         // 查找最后一个点号的位置
 
         // 检查后缀是否为 .dmp（不区分大小写）
         if (const auto dot_pos = static_cast<size_t>(filename.rfind('.')); dot_pos != std::string::npos &&
             filename.size() - dot_pos == 4 &&
             (filename.substr(dot_pos + 1) == "dmp" ||
-             filename.substr(dot_pos + 1) == "DMP")) {
+                filename.substr(dot_pos + 1) == "DMP"))
+        {
             return filename.substr(0, dot_pos);
-             }
+        }
         return filename;
     }
+
     // 生成唯一的文件名
-    static std::string generateUniqueFilename(const std::string& prefix, const std::string& extension) {
+    static std::string generateUniqueFilename(const std::string& prefix, const std::string& extension)
+    {
         const auto now = std::chrono::system_clock::now();
         auto in_time_t = std::chrono::system_clock::to_time_t(now);
         // 安全获取本地时间
@@ -126,13 +139,15 @@ private:
 #endif
         // 格式化为字符串
         std::ostringstream oss;
-        oss << prefix << "_"<< std::put_time(&time_info, "%Y%m%d_%H%M%S") << "." << extension;
+        oss << prefix << "_" << std::put_time(&time_info, "%Y%m%d_%H%M%S") << "." << extension;
         return oss.str();
     }
 
     // 重命名 minidump 文件
-    [[nodiscard]] std::string renameMinidumpFile(const std::string& original_path) const {
-        try {
+    [[nodiscard]] std::string renameMinidumpFile(const std::string& original_path) const
+    {
+        try
+        {
             // 生成新的文件名
             const std::string new_filename = generateUniqueFilename("crash", "dmp");
             const fs::path new_path = fs::path(dump_path_) / new_filename;
@@ -142,7 +157,9 @@ private:
 
             // 返回新路径用于后续处理
             return new_path.string();
-        } catch (const fs::filesystem_error& e) {
+        }
+        catch (const fs::filesystem_error& e)
+        {
             std::cerr << "Failed to rename minidump file: " << e.what() << std::endl;
             return original_path; // 返回原始路径作为回退
         }
@@ -174,19 +191,21 @@ private:
         const google_breakpad::MinidumpDescriptor& descriptor,
         void* context,
         const bool succeeded
-    ) {
+        )
+    {
         const auto self = static_cast<Impl*>(context);
-        return self->handleCrash(succeeded, nullptr,nullptr,descriptor.path());
+        return self->handleCrash(succeeded, nullptr, nullptr, descriptor.path());
     }
 #endif
     // 统一的崩溃处理函数
     bool handleCrash(const bool succeeded,
-                    const wchar_t* dump_path = nullptr,
-                    const wchar_t* minidump_id = nullptr,
-                    const char* linux_path = nullptr) const
+                     const wchar_t* dump_path = nullptr,
+                     const wchar_t* minidump_id = nullptr,
+                     const char* linux_path = nullptr) const
     {
-        if (!succeeded) {
-            std::cerr << "Failed to generate minidump" << std::endl;
+        if (!succeeded)
+        {
+            DLL_LOG_ERROR(MODULE_NAME) << "Failed to generate minidump";
             return false;
         }
         // 获取原始 minidump 文件路径
@@ -211,7 +230,8 @@ private:
         // 写入自定义信息
         // writeCustomInfo(info_path);
         DLL_LOG_ERROR(MODULE_NAME) << oss.str() << ",程序异常退出,准备清理资源 ...";
-        if (func_) func_();
+        if (func_)
+            func_();
         return true;
     }
 #ifdef __APPLE__
@@ -223,7 +243,8 @@ private:
     }
 #endif
     // 写入自定义信息
-    void writeCustomInfo(const std::string& info_path) {
+    void writeCustomInfo(const std::string& info_path)
+    {
         // 获取当前时间
         const auto now = std::chrono::system_clock::now();
         auto in_time_t = std::chrono::system_clock::to_time_t(now);
@@ -235,7 +256,8 @@ private:
             local_copy = custom_info_;
         }
         // 写入文件
-        if (std::ofstream outfile(info_path, std::ios::app); outfile.is_open()) {
+        if (std::ofstream outfile(info_path, std::ios::app); outfile.is_open())
+        {
             std::tm time_info = {};
 #ifdef _WIN32
             // Windows 安全版本
@@ -246,15 +268,14 @@ private:
 #endif
             outfile << "Crash time: " << std::put_time(&time_info, "%Y-%m-%d %H:%M:%S") << "\n";
             // 写入自定义信息
-            for (const auto& [key, value] : local_copy) {
+            for (const auto& [key, value] : local_copy)
+            {
                 outfile << key << ": " << value << "\n";
             }
             outfile.close();
         }
     }
 };
-
-
 
 
 CrashHandler& CrashHandler::getInstance()
@@ -264,7 +285,10 @@ CrashHandler& CrashHandler::getInstance()
 }
 
 // CrashHandler 公共接口实现
-CrashHandler::CrashHandler():impl_( nullptr){}
+CrashHandler::CrashHandler():
+    impl_(nullptr)
+{
+}
 
 void CrashHandler::init(const std::string& dumpPath, const std::function<void()>& func)
 {
@@ -273,28 +297,33 @@ void CrashHandler::init(const std::string& dumpPath, const std::function<void()>
 
 void CrashHandler::shutDown()
 {
-    if (impl_) {
+    if (impl_)
+    {
         delete impl_;
         impl_ = nullptr;
     }
 }
+
 void CrashHandler::setCustomInfo(const std::string& key, const std::string& value) const
 {
-    if (impl_) {
+    if (impl_)
+    {
         impl_->setCustomInfo(key, value);
     }
 }
 
 void CrashHandler::clearCustomInfo() const
 {
-    if (impl_) {
+    if (impl_)
+    {
         impl_->clearCustomInfo();
     }
 }
 
 void CrashHandler::triggerTestCrash() const
 {
-    if (impl_) {
+    if (impl_)
+    {
         Impl::triggerTestCrash();
     }
 }

@@ -29,7 +29,7 @@
 ### 指定参数
 
 ```text
--D JADE_BUILD_EXAMPLES=ON -D BREAKPAD_DIR="D:\SDKS\breakpad"  -D SPDLOG_DIR="D:\SDKS\spdlog" -D SQLITE3_DIR="D:\SDKS\sqlite3"  -D OPENSSL_DIR="D:\SDKS\openssl" -D HASP_ADAPTER_DIR="D:\SDKS\hasp_adapter" -D OPENCV_DIR="D:\SDKS\opencv" -D BUILD_SHARED=OFF 
+-D JADE_BUILD_EXAMPLES=ON -D BREAKPAD_DIR="D:\SDKS\breakpad"  -D SPDLOG_DIR="D:\SDKS\spdlog" -D SQLITE3_DIR="D:\SDKS\sqlite3"  -D OPENSSL_DIR="D:\SDKS\openssl" -D HASP_ADAPTER_DIR="D:\SDKS\hasp_adapter" -D OPENCV_DIR="D:\SDKS\opencv-3.4.5" -D BUILD_SHARED=OFF 
 ```
 ### Debug
 

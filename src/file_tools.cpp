@@ -22,14 +22,18 @@ using namespace jade;
 
 bool FileTools::createDirectory(const std::string& path)
 {
-    try {
+    try
+    {
         const string fixedPath = fixPath(path);
-        if (exists(fixedPath)) {
+        if (exists(fixedPath))
+        {
             getLastErrorRef() = "Directory already exists";
             return false;
         }
         return create_directory(fixedPath);
-    } catch (const std::exception& e) {
+    }
+    catch (const std::exception& e)
+    {
         getLastErrorRef() = e.what();
         return false;
     }
@@ -37,14 +41,18 @@ bool FileTools::createDirectory(const std::string& path)
 
 bool FileTools::createDirectories(const std::string& path)
 {
-    try {
+    try
+    {
         const string fixedPath = fixPath(path);
-        if (exists(fixedPath)) {
+        if (exists(fixedPath))
+        {
             getLastErrorRef() = "Directory already exists";
             return false;
         }
         return create_directories(fixedPath);
-    } catch (const std::exception& e) {
+    }
+    catch (const std::exception& e)
+    {
         getLastErrorRef() = e.what();
         return false;
     }
@@ -52,10 +60,13 @@ bool FileTools::createDirectories(const std::string& path)
 
 bool FileTools::isExists(const std::string& path)
 {
-    try {
+    try
+    {
         const string fixedPath = fixPath(path);
         return exists(fixedPath) && is_directory(fixedPath);
-    } catch (const std::exception& e) {
+    }
+    catch (const std::exception& e)
+    {
         getLastErrorRef() = e.what();
         return false;
     }
@@ -64,18 +75,23 @@ bool FileTools::isExists(const std::string& path)
 
 bool FileTools::remove(const std::string& path)
 {
-    try {
+    try
+    {
         const string fixedPath = fixPath(path);
-        if (!exists(fixedPath)) {
+        if (!exists(fixedPath))
+        {
             getLastErrorRef() = "Directory does not exist";
             return false;
         }
         return remove_all(fixedPath) > 0;
-    } catch (const std::exception& e) {
+    }
+    catch (const std::exception& e)
+    {
         getLastErrorRef() = e.what();
         return false;
     }
 }
+
 string FileTools::fixPath(const std::string& path)
 {
 #ifdef _WIN32
@@ -96,13 +112,19 @@ string FileTools::getLastError()
 vector<string> FileTools::getImageFiles(const std::string& path, const bool fullPath)
 {
     std::vector<std::string> imageFiles;
-    try {
-        for (const auto& entry : directory_iterator(u8path(fixPath(path)))) {
+    try
+    {
+        for (const auto& entry : directory_iterator(u8path(fixPath(path))))
+        {
 #ifdef LOW_GCC
-            if (is_regular_file(entry) && isImageFile(entry.path().u8string())) {
-                if (fullPath) {
+            if (is_regular_file(entry) && isImageFile(entry.path().u8string()))
+            {
+                if (fullPath)
+                {
                     imageFiles.push_back(entry.path().u8string());
-                } else {
+                }
+                else
+                {
                     imageFiles.push_back(entry.path().filename().u8string());
                 }
             }
@@ -115,10 +137,10 @@ vector<string> FileTools::getImageFiles(const std::string& path, const bool full
                 }
             }
 #endif
-
-
         }
-    } catch (const filesystem_error& e) {
+    }
+    catch (const filesystem_error& e)
+    {
         getLastErrorRef() = e.what();
     }
     return imageFiles;
@@ -128,7 +150,8 @@ bool FileTools::writeBinaryToFile(const std::string& path, const float* data, co
 {
     // 写入二进制文件
     std::ofstream outFile(path, ios::out | ios::binary);
-    if (!outFile.write(reinterpret_cast<const char*>(data), static_cast<long long>(size* sizeof(float)))) {
+    if (!outFile.write(reinterpret_cast<const char*>(data), static_cast<long long>(size * sizeof(float))))
+    {
         std::cerr << "文件路径为:" << path << "写入文件失败！" << std::endl;
         return false;
     }
@@ -140,14 +163,11 @@ bool FileTools::writeBinaryToFile(const std::string& path, const char* data, con
 {
     // 写入二进制文件
     std::ofstream outFile(path, ios::out | ios::binary);
-    if (!outFile.write(data, size)) {
+    if (!outFile.write(data, size))
+    {
         std::cerr << "文件路径为:" << path << "写入文件失败！" << std::endl;
         return false;
     }
     outFile.close();
     return true;
 }
-
-
-
-

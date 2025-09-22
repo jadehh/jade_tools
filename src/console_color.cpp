@@ -14,8 +14,8 @@ using namespace jade;
 void ConsoleColor::reset()
 {
     std::cout << "\033[0m";
-
 }
+
 void ConsoleColor::bold()
 {
     std::cout << "\033[1m";
@@ -34,19 +34,16 @@ void ConsoleColor::reverse()
 void ConsoleColor::setBackgroundColor(const int rgb[3])
 {
     std::cout << "\033[48;2;" << rgb[0] << ";" << rgb[1] << ";" << rgb[2] << "m";
-
 }
 
 void ConsoleColor::setForegroundColor(const int rgb[3])
 {
-    std::cout << "\033[38;2;" << rgb[0] << ";" << rgb[1] << ";" << rgb[2] <<  "m";
-
+    std::cout << "\033[38;2;" << rgb[0] << ";" << rgb[1] << ";" << rgb[2] << "m";
 }
 
 void ConsoleColor::setBackgroundColor(int r, int g, int b)
 {
     std::cout << "\033[48;2;" << r << ";" << g << ";" << b << "m";
-
 }
 
 void ConsoleColor::setForegroundColor(int r, int g, int b)
@@ -60,14 +57,7 @@ std::string ConsoleColor::getForegroundColor(const int rgb[3])
 }
 
 
-
-
 void ConsoleColor::underline()
 {
     std::cout << "\033[4m";
 }
-
-
-
-
-

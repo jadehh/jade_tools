@@ -10,7 +10,7 @@
 #include "test/include/testSocket.h"
 #include "include/jade_tools.h"
 
-void MessageHandle(const int socket,const std::string& message)
+void MessageHandle(const int socket, const std::string& message)
 {
     LOG_DEBUG() << "处理socket自定义信息" << socket << message;
 }
@@ -18,8 +18,7 @@ void MessageHandle(const int socket,const std::string& message)
 void testSocketServer()
 {
     LOG_INFO() << "=====================================Socket Server测试开始" << "=====================================";
-    jade::SocketServer::getInstance().init(8099,MessageHandle);
+    jade::SocketServer::getInstance().init(8099, MessageHandle);
     jade::SocketServer::getInstance().start();
     LOG_INFO() << "=====================================Socket Server测试结束" << "=====================================";
-
 }

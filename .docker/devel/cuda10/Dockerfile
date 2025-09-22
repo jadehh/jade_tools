@@ -111,4 +111,4 @@ RUN git clone --depth 1 --branch 4.3.0 https://github.com/opencv/opencv.git  && 
         -D CMAKE_LIBRARY_PATH=/usr/local/cuda/lib64/stubs ..  && make  -j$(nproc) && make install && rm -r /opencv/ && rm -r /opencv_contrib
 
 ## 设置运行环境 包括breakpad和opencv的环境
-ENV PATH=/usr/local/opencv/bin:${PATH}
+ENV PATH=/usr/local/opencv/bin:/usr/local/breakpad/bin/:${PATH}

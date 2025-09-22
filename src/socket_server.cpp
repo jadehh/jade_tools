@@ -38,7 +38,8 @@ class SocketServer::Impl final
 public:
     using MessageHandler = std::function<void(SOCKET_TYPE, const std::string&)>;
 
-    explicit Impl(const int port, MessageHandler  callback): port_(port), serverSocket_(0), running_(false), callback_(std::move(callback))
+    explicit Impl(const int port, MessageHandler callback):
+        port_(port), serverSocket_(0), running_(false), callback_(std::move(callback))
     {
 #ifdef _WIN32
         WSADATA wsaData;
@@ -51,9 +52,11 @@ public:
 
     Impl(const Impl&) = delete;
     Impl& operator=(const Impl&) = delete;
+
     void start()
     {
-        if (running_) return;
+        if (running_)
+            return;
         running_ = true;
         // 创建监听套接字
         serverSocket_ = socket(AF_INET, SOCK_STREAM, 0);
@@ -87,9 +90,10 @@ public:
         acceptThread_ = std::thread(&Impl::acceptConnections, this);
     }
 
-    void stop()
+    ~ Impl()
     {
-        if (!running_) return;
+        if (!running_)
+            return;
         running_ = false;
         // 关闭监听套接字
         closeSocket(serverSocket_);
@@ -112,6 +116,7 @@ public:
 #endif
         DLL_LOG_TRACE(MODULE_NAME) << "停止Socket服务完成 ...";
     }
+
 private:
     int port_;
     SOCKET_TYPE serverSocket_;
@@ -143,7 +148,7 @@ private:
 
             char clientIP[INET_ADDRSTRLEN];
             inet_ntop(AF_INET, &(clientAddr.sin_addr), clientIP, INET_ADDRSTRLEN);
-            DLL_LOG_DEBUG(MODULE_NAME) << "客户端连接 " << clientIP << ":" << ntohs(clientAddr.sin_port) ;
+            DLL_LOG_DEBUG(MODULE_NAME) << "客户端连接 " << clientIP << ":" << ntohs(clientAddr.sin_port);
 
             // 添加客户端到列表
             {
@@ -221,17 +226,27 @@ SocketServer& SocketServer::getInstance()
     return instance;
 }
 
-SocketServer::SocketServer():impl_(nullptr){}
+SocketServer::SocketServer():
+    impl_(nullptr)
+{
+}
 
 void SocketServer::init(const int port, const MessageHandler& handler)
 {
     impl_ = new Impl(port, handler);
 }
 
-void SocketServer::start() const{if (impl_) impl_->start();}
+void SocketServer::start() const
+{
+    if (impl_)
+        impl_->start();
+}
 
-void SocketServer::stop() const{ if (impl_) impl_->stop();}
-
-
-
-
+void SocketServer::stop()
+{
+    if (impl_)
+    {
+        delete impl_;
+        impl_ = nullptr;
+    }
+}

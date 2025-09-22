@@ -24,6 +24,7 @@
 #endif
 
 using namespace std;
+
 namespace jade
 {
     const char* getVersion()
@@ -65,7 +66,8 @@ namespace jade
 
             for (auto& row : data)
             {
-                if (row.size() != colCount) continue;
+                if (row.size() != colCount)
+                    continue;
                 for (int i = 0; i < colCount; ++i)
                 {
                     if (static_cast<int>(row[i].length()) > colWidths[i])
@@ -76,14 +78,16 @@ namespace jade
             }
 
             // 为每个列增加4个字符的间距
-            for (int& w : colWidths) w += 4;
+            for (int& w : colWidths)
+                w += 4;
         }
 
         // 2. 水平居中函数
         auto centerCell = [](const string& content, const int width) -> string
         {
             const int totalSpace = static_cast<int>(width - content.length());
-            if (totalSpace < 0) return content; // 太长则截断
+            if (totalSpace < 0)
+                return content; // 太长则截断
             const int leftSpace = totalSpace / 2;
             const int rightSpace = totalSpace - leftSpace;
             return string(leftSpace, ' ') + content + string(rightSpace, ' ');
@@ -110,7 +114,8 @@ namespace jade
         // 6. 打印表格数据
         for (auto& row : data)
         {
-            if (row.size() != colCount) continue;
+            if (row.size() != colCount)
+                continue;
 
             ss << "|";
             for (int i = 0; i < colCount; ++i)
@@ -134,7 +139,8 @@ namespace jade
     std::string formatValue(const double& value, const int precision, const bool fixed)
     {
         std::ostringstream oss;
-        if (fixed) oss << std::fixed;
+        if (fixed)
+            oss << std::fixed;
         oss << std::setprecision(precision) << value;
         return oss.str();
     }
@@ -142,7 +148,8 @@ namespace jade
     std::string formatValue(const int& value, const int precision, const bool fixed)
     {
         std::ostringstream oss;
-        if (fixed) oss << std::fixed;
+        if (fixed)
+            oss << std::fixed;
         oss << std::setprecision(precision) << value;
         return oss.str();
     }
@@ -209,14 +216,15 @@ namespace jade
 #if defined(_WIN32) || defined(_WIN64)
         localtime_s(&result, &time);  // Windows安全版本
 #else
-       localtime_r(&time, &result); // 非Windows平台
+        localtime_r(&time, &result); // 非Windows平台
 #endif
         // 构造扩展时间对象
         result.tm_millis = static_cast<int>(millis.count());
         return result;
     }
 
-    std::string timePointToTimeString(const std::chrono::time_point<std::chrono::system_clock> clock,const char *fmt_arg,const bool with_milliseconds)
+    std::string timePointToTimeString(const std::chrono::time_point<std::chrono::system_clock> clock,
+                                      const char* fmt_arg, const bool with_milliseconds)
     {
         // 使用静态互斥锁保证线程安全
         static std::mutex mtx;
@@ -235,23 +243,23 @@ namespace jade
 #endif
         // 构造扩展时间对象
         result.tm_millis = static_cast<int>(millis.count());
-        return getTimeStampString(result,fmt_arg,with_milliseconds);
-
+        return getTimeStampString(result, fmt_arg, with_milliseconds);
     }
 
-    std::string getTimeStampString(const jade_time& time,const char *fmt_arg,const bool with_milliseconds)
+    std::string getTimeStampString(const jade_time& time, const char* fmt_arg, const bool with_milliseconds)
     {
         std::ostringstream oss;
         oss << std::put_time(&time, fmt_arg);
-        if (with_milliseconds){
+        if (with_milliseconds)
+        {
             oss << "." << std::setfill('0') << std::setw(3) << time.tm_millis;
         }
         return oss.str();
     }
 
-    std::string getTimeStampString(const char *fmt_arg, const bool with_milliseconds)
+    std::string getTimeStampString(const char* fmt_arg, const bool with_milliseconds)
     {
-        return getTimeStampString(getTimeStamp(),fmt_arg,with_milliseconds);
+        return getTimeStampString(getTimeStamp(), fmt_arg, with_milliseconds);
     }
 
     std::wstring string_to_wstring(const std::string& str)
@@ -274,12 +282,16 @@ namespace jade
 
         return result;
 #else
-        if (str.empty()) return L"";
+        if (str.empty())
+            return L"";
 
-        try {
+        try
+        {
             std::wstring_convert<std::codecvt_utf8<wchar_t>> converter;
             return converter.from_bytes(str);
-        } catch (...) {
+        }
+        catch (...)
+        {
             return L"";
         }
 #endif
@@ -306,16 +318,19 @@ namespace jade
 
         return result;
 #else
-        if (w_str.empty()) return "";
+        if (w_str.empty())
+            return "";
 
-        try {
+        try
+        {
             std::wstring_convert<std::codecvt_utf8<wchar_t>> converter;
             return converter.to_bytes(w_str);
-        } catch (...) {
+        }
+        catch (...)
+        {
             return "";
         }
 #endif
-
     }
 
     void jadeToolsClean()

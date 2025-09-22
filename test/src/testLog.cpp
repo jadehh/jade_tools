@@ -22,21 +22,23 @@ void testThreadLog()
         std::this_thread::sleep_for(std::chrono::milliseconds(10));
     }
 }
+
 void testLog()
 {
-    jade::Logger::getInstance().init("app1","info", "Logs",jade::Logger::S_TRACE, true, true,1024*1024,30);
+    jade::Logger::getInstance().init("app1", "info", "Logs", jade::Logger::S_TRACE, true, true, 1024 * 1024, 30);
 
     LOG_INFO() << "=====================================LOG日志测试开始" << "=====================================";
-    LOG_TRACE() << "LogTrace" << 2 << 2.1 ;
+    LOG_TRACE() << "LogTrace" << 2 << 2.1;
     DLL_LOG_TRACE("App") << "App DLL LOG Trace";
     DLL_LOG_DEBUG("App") << "App DLL LOG DEBUG";
     LOG_DEBUG() << "LOG DEBUG";
     try
     {
         throw std::runtime_error("runtime error");
-    }catch (std::exception& e)
+    }
+    catch (std::exception& e)
     {
-        LOG_EXCEPTION(0,e.what()) << "Message";
+        LOG_EXCEPTION(0, e.what()) << "Message";
     }
 
     std::thread t1(testThreadLog);
@@ -45,7 +47,4 @@ void testLog()
     t1.join();
     LOG_INFO() << "=====================================LOG日志测试结束" << "=====================================";
     // LOG_CRITICAL(-200) << "LogTrace" << "拼接";
-
 }
-
-

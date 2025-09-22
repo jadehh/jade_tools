@@ -12,6 +12,6 @@
 void testAdapter()
 {
     LOG_INFO() << "=====================================HaspAdapter 测试开始" << "=====================================";
-    jade::HaspAdapter::getInstance().init(static_cast<jade::HaspAdapter::HaspAdapterDevice>(1),{101});
+    jade::HaspAdapter::getInstance().init(static_cast<jade::HaspAdapter::HaspAdapterDevice>(1), {101});
     jade::HaspAdapter::getInstance().run();
 }

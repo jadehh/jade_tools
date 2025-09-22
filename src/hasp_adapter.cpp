@@ -11,14 +11,14 @@
 #include <condition_variable>
 #include "include/jade_tools.h"
 using namespace jade;
-
 #include "include/hasp_code.h"
 #define MODULE_NAME "HaspAdapter"
-
 #ifdef  HASP_ENABLED
+#include "hasp_api.h"
+
 class HaspAdapter::Impl
 {
-    HaspAdapter::HaspAdapterDevice device_;
+    HaspAdapterDevice device_;
     int featureId_;
     std::string lastErrorMsg_;
     hasp_status_t lastError_;
@@ -27,12 +27,43 @@ class HaspAdapter::Impl
     std::thread haspListenerThread_; // 加密狗监听线程
     hasp_handle_t handle_;
     hasp_handle_t listen_handle_;
+
 public:
-    explicit Impl(const HaspAdapterDevice device,const std::vector<int>& haspIdList):device_(device),featureId_(0),lastError_(HASP_STATUS_OK),haspIdList_(haspIdList),running_(false),handle_(HASP_INVALID_HANDLE_VALUE),listen_handle_(HASP_INVALID_HANDLE_VALUE)
+    explicit Impl(const HaspAdapterDevice device, const std::vector<int>& haspIdList):
+        device_(device), featureId_(0),
+        lastError_(HASP_STATUS_OK),
+        haspIdList_(haspIdList),
+        running_(false),
+        handle_(
+            HASP_INVALID_HANDLE_VALUE),
+        listen_handle_(
+            HASP_INVALID_HANDLE_VALUE)
     {
-        if (const bool success = login(&handle_); !success) printError();
-        else DLL_LOG_TRACE(MODULE_NAME) << "加密狗登录成功,当前授权ID为:101";
+        if (const bool success = login(&handle_); !success)
+            DLL_LOG_CRITICAL(MODULE_NAME, getLastError()) << "加密狗登录失败,失败原因:" << getLastErrorMsg();
+        else
+            DLL_LOG_TRACE(MODULE_NAME) << "加密狗登录成功,当前授权ID为:101";
     }
+
+    ~Impl() {
+        shutDown();
+    }
+
+
+
+    Impl(const Impl&) = delete;
+    Impl& operator=(const Impl&) = delete;
+
+    void run()
+    {
+        if (running_)
+            return;
+        running_ = true;
+        startHaspListener();
+    };
+
+private:
+
 
     bool checkHaspStatus(const hasp_status_t status)
     {
@@ -50,7 +81,7 @@ public:
         case HASP_HASP_NOT_FOUND:
             lastErrorMsg_ = "未检测到加密狗,请检查加密狗是否插入";
             return false;
-        case HASP_TOO_MANY_USERS :
+        case HASP_TOO_MANY_USERS:
             lastErrorMsg_ = "当前登录用户超过最大限制";
             return false;
         case HASP_FEATURE_EXPIRED:
@@ -74,9 +105,10 @@ public:
     * 设备上的多进程，只会占用会话，不会占用登录数，
     * 如果不在Docker上使用的话，需要对锁进行站点的限制，或者直接对会话进行限制
     */
-    hasp_status_t login_featureID(hasp_handle_t* handle,const int feature_id) const
+    hasp_status_t login_featureID(hasp_handle_t* handle, const int feature_id) const
     {
-        if (feature_id == 0) throw std::runtime_error("Feature ID 不能为0");
+        if (feature_id == 0)
+            throw std::runtime_error("Feature ID 不能为0");
         std::string scope = "";
         switch (device_)
         {
@@ -84,54 +116,52 @@ public:
             // Docker 启动  Docker中 使用远程的锁,注意Docker不能使用--net启动,如果需要用到--net,请在Docker中安装加密狗的环境，设备类型需要切换到系统启动
             scope =
                 "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>"
-                     "<haspscope>"
-                      "    <license_manager hostname=\"~localhost\" />"
+                "<haspscope>"
+                "    <license_manager hostname=\"~localhost\" />"
                 "</haspscope>";
-            return hasp_login_scope(feature_id,scope.c_str(), vendor_code, handle);
+            return hasp_login_scope(feature_id, scope.c_str(), vendor_code, handle);
         case SYSTEM:
             // 系统启动
             scope =
-            "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>"
-            "<haspscope>"
-            "    <license_manager hostname=\"localhost\" />"
-            "</haspscope>";
-            return hasp_login_scope(feature_id,scope.c_str(), vendor_code, handle);
-            default:
-            return hasp_login(feature_id,vendor_code,handle);
+                "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>"
+                "<haspscope>"
+                "    <license_manager hostname=\"localhost\" />"
+                "</haspscope>";
+            return hasp_login_scope(feature_id, scope.c_str(), vendor_code, handle);
+        default:
+            return hasp_login(feature_id, vendor_code, handle);
         }
-
     }
 
     bool login(hasp_handle_t* handle, const int featureId)
     {
         hasp_status_t status = HASP_STATUS_OK;
-        status = login_featureID(handle,featureId);
+        status = login_featureID(handle, featureId);
         return checkHaspStatus(status);
     }
 
     bool login(hasp_handle_t* handle)
     {
-        const bool status = std::any_of(haspIdList_.begin(), haspIdList_.end(), [this, handle](const auto& id) {
-            if (login(handle,id)){return true;}// 直接返回条件
+        const bool status = std::any_of(haspIdList_.begin(), haspIdList_.end(), [this, handle](const auto& id)
+        {
+            if (login(handle, id)) { return true; } // 直接返回条件
             return false;
         });
         return status;
     };
-    ~Impl() {shutDown();};
-    Impl(const Impl&) = delete;
-    Impl& operator=(const Impl&) = delete;
-    void run()
-    {
-        if (running_) return;
-        running_ = true;
-        startHaspListener();
-    };
+
     // 启动加密狗监听线程
-    void startHaspListener() {
-        haspListenerThread_ = std::thread([this] {
-            while (running_) {
+    void startHaspListener()
+    {
+        haspListenerThread_ = std::thread([this]
+        {
+            while (running_)
+            {
                 std::this_thread::sleep_for(std::chrono::seconds(30));
-                if (!login(&listen_handle_)){printError();}else
+                if (!login(&listen_handle_)) {
+                    DLL_LOG_CRITICAL(MODULE_NAME, getLastError()) << "加密狗登录失败,失败原因:" << getLastErrorMsg();
+                }
+                else
                 {
                     DLL_LOG_TRACE(MODULE_NAME) << "加密狗监听成功";
                     hasp_logout(listen_handle_);
@@ -139,12 +169,7 @@ public:
             }
         });
     }
-    void shutDown()
-    {
-        running_ = false;
-        hasp_logout(handle_);
-        DLL_LOG_TRACE(MODULE_NAME) << "加密狗监听关闭";
-    };
+
 
     [[nodiscard]] int getLastError() const
     {
@@ -156,11 +181,13 @@ public:
         return lastErrorMsg_;
     }
 
-    void printError()
+    void shutDown()
     {
-        shutDown();
-        DLL_LOG_CRITICAL(MODULE_NAME,getLastError()) << "加密狗登录失败,失败原因:" << getLastErrorMsg() ;
+        running_ = false;
+        hasp_logout(handle_);
+        DLL_LOG_TRACE(MODULE_NAME) << "加密狗监听关闭";
     }
+
 };
 
 
@@ -170,11 +197,14 @@ HaspAdapter& HaspAdapter::getInstance()
     return instance;
 }
 
-HaspAdapter::HaspAdapter():impl_(nullptr){}
-
-void HaspAdapter::init(const HaspAdapterDevice device,const std::vector<int>& haspIdList)
+HaspAdapter::HaspAdapter():
+    impl_(nullptr)
 {
-    impl_ = new Impl(device,haspIdList);
+}
+
+void HaspAdapter::init(const HaspAdapterDevice device, const std::vector<int>& haspIdList)
+{
+    impl_ = new Impl(device, haspIdList);
 }
 
 void HaspAdapter::run() const
@@ -185,16 +215,12 @@ void HaspAdapter::run() const
     }
 }
 
-void HaspAdapter::shutDown() const
+void HaspAdapter::shutDown()
 {
     if (impl_)
     {
-        impl_->shutDown();
+        delete impl_;
+        impl_ = nullptr;
     }
 }
 #endif
-
-
-
-
-

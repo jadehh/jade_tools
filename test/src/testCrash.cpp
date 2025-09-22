@@ -22,15 +22,16 @@ void testCrash(const std::function<void()>& func)
     // 初始化崩溃处理器
     // crash_handler.setupHandler();
     // 设置清理函数
-    jade::CrashHandler::getInstance().init("./crash/",func);
+    jade::CrashHandler::getInstance().init("./crash/", func);
     // 设置自定义信息（线程安全）
     jade::CrashHandler::getInstance().setCustomInfo("AppVersion", "1.0.0");
     jade::CrashHandler::getInstance().setCustomInfo("UserID", "12345");
 
     // 创建工作线程
-    std::thread worker([] {
-       jade::CrashHandler::getInstance().setCustomInfo("ThreadID", "WorkerThread");
-   });
+    std::thread worker([]
+    {
+        jade::CrashHandler::getInstance().setCustomInfo("ThreadID", "WorkerThread");
+    });
     // 主线程逻辑...
     //  jade::CrashHandler::getInstance().triggerTestCrash();
     // 测试崩溃（仅用于调试）

@@ -38,7 +38,8 @@ class CustomFormatter final : public spdlog::formatter
     std::map<spdlog::level::level_enum, const char*> level_colors;
 
 public:
-    explicit CustomFormatter(const bool is_console_sink):is_console_sink_(is_console_sink)
+    explicit CustomFormatter(const bool is_console_sink):
+        is_console_sink_(is_console_sink)
     {
         // 设置级别名称
         level_names = {
@@ -52,17 +53,18 @@ public:
 
         // 设置级别颜色
         level_colors = {
-            {spdlog::level::trace, "\033[37m"},    // 灰色
-            {spdlog::level::debug, "\033[36m"},    // 青色
-            {spdlog::level::info, "\033[32m"},     // 绿色
-            {spdlog::level::warn, "\033[33m"},     // 黄色
-            {spdlog::level::err, "\033[31m"},      // 红色
+            {spdlog::level::trace, "\033[37m"}, // 灰色
+            {spdlog::level::debug, "\033[36m"}, // 青色
+            {spdlog::level::info, "\033[32m"}, // 绿色
+            {spdlog::level::warn, "\033[33m"}, // 黄色
+            {spdlog::level::err, "\033[31m"}, // 红色
             {spdlog::level::critical, "\033[1;31m"} // 粗体红色
         };
     }
 
     // 设置应用程序名称（在程序开始时调用一次）
-    static void setAppName(const std::string& name) {
+    static void setAppName(const std::string& name)
+    {
         appName() = name;
     }
 
@@ -88,12 +90,13 @@ public:
 
     void format(const spdlog::details::log_msg& msg, spdlog::memory_buf_t& dest) override
     {
-        const char* RESET = is_console_sink_ ? "\033[0m" : "";    // 重置颜色
+        const char* RESET = is_console_sink_ ? "\033[0m" : ""; // 重置颜色
         // 1.添加时间 一行 带颜色
-        if (is_console_sink_) {
+        if (is_console_sink_)
+        {
             dest.append(level_colors[msg.level], level_colors[msg.level] + strlen(level_colors[msg.level]));
         }
-        fmt::format_to(fmt::appender(dest), "{}", jade::timePointToTimeString(msg.time,"%Y-%m-%d %H:%M:%S",true));
+        fmt::format_to(fmt::appender(dest), "{}", jade::timePointToTimeString(msg.time, "%Y-%m-%d %H:%M:%S", true));
         // 2. 添加App名称
         fmt::format_to(fmt::appender(dest), " - [{}] -", getName());
         // 3. 添加等级
@@ -105,8 +108,10 @@ public:
             // 提取文件名（不含路径）
             const char* filename = msg.source.filename;
             const char* basename = filename;
-            for (const char* p = filename; *p != '\0'; p++) {
-                if (*p == '/' || *p == '\\') {
+            for (const char* p = filename; *p != '\0'; p++)
+            {
+                if (*p == '/' || *p == '\\')
+                {
                     basename = p + 1;
                 }
             }
@@ -118,25 +123,30 @@ public:
 
         // 6. 添加日志消息内容
         dest.append(msg.payload.data(), msg.payload.data() + msg.payload.size());
-        if (is_console_sink_) {
+        if (is_console_sink_)
+        {
             dest.append(RESET, RESET + strlen(RESET));
         }
         // 7. 添加换行符
         dest.push_back('\n');
     }
+
     [[nodiscard]] std::unique_ptr<formatter> clone() const override
     {
         return std::make_unique<CustomFormatter>(is_console_sink_);
     }
+
 private:
     // 使用静态局部变量来存储AppName，保证线程安全
-    static std::string& appName() {
+    static std::string& appName()
+    {
         static std::string appName;
         return appName;
     }
 
     // 使用静态局部变量来存储DLLName，保证线程安全
-    static std::string& dllName() {
+    static std::string& dllName()
+    {
         static std::string dllName;
         return dllName;
     }
@@ -148,17 +158,19 @@ private:
     }
 
     bool is_console_sink_ = false; // 新增：标识是否为控制台输出
-
 };
+
 namespace jade
 {
     class LoggerStream::Impl
     {
     public:
-        Impl(const Logger::Level level, const char* file, const int line, const int exitCode,std::string  exceptionMsg): level_(level), line_(line), exitCode_(exitCode), file_(file),moduleName_(""), exceptionMsg_(std::move(exceptionMsg))
+        Impl(const Logger::Level level, const char* file, const int line, const int exitCode, std::string exceptionMsg):
+            level_(level), line_(line), exitCode_(exitCode), file_(file), moduleName_(""),
+            exceptionMsg_(std::move(exceptionMsg))
         {
-
         }
+
         void setModuleName(const char* moduleName) { moduleName_ = moduleName; }
         void setStream(const char* value) { buffer_ << value; }
         void setStream(const int value) { buffer_ << value; }
@@ -167,6 +179,7 @@ namespace jade
         void setStream(const std::string& value) { buffer_ << value; }
         void setStream(const bool value) { buffer_ << value; }
         void setStream(const long value) { buffer_ << value; }
+
         void log() const
         {
             CustomFormatter::setDllName(moduleName_);
@@ -196,7 +209,6 @@ namespace jade
             default:
                 break;
             }
-
         }
 
     private:
@@ -220,7 +232,8 @@ namespace jade
         setModuleName(moduleName);
     }
 
-    LoggerStream::LoggerStream(const Logger::Level level, const char* file, const int line, const int exitCode, const std::string& e) :
+    LoggerStream::LoggerStream(const Logger::Level level, const char* file, const int line, const int exitCode,
+                               const std::string& e) :
         impl_(new Impl(level, file, line, exitCode, e))
     {
     }
@@ -269,7 +282,7 @@ namespace jade
     LoggerStream& LoggerStream::operator<<(long value)
     {
         impl_->setStream(value);
-        return * this;
+        return *this;
     }
 
 
@@ -316,14 +329,18 @@ namespace jade
 
     class SpdLoggerIMPL
     {
-
     public:
         bool initialized_ = false;
         bool shutdown_ = false;
 
         ~SpdLoggerIMPL()
         {
-            shutDown();
+            DLL_LOG_TRACE(MODULE_NAME) << "关闭日志完成";
+            shutdown_ = true;
+            initialized_ = true;
+#ifdef SPDLOG_ENABLE
+            sink.reset();
+#endif
         }
 #ifdef SPDLOG_ENABLE
         std::shared_ptr<spdlog::logger> sink = nullptr;
@@ -331,21 +348,13 @@ namespace jade
         // 正确的构造函数
         SpdLoggerIMPL() = default;
 
-        void shutDown()
-        {
-            DLL_LOG_TRACE(MODULE_NAME) << "关闭日志完成 ...";
-            shutdown_ = true;
-            initialized_ = true;
-#ifdef SPDLOG_ENABLE
-            sink.reset();
-#endif
-        }
-
     };
 
-    Logger::Logger() : logger_(new SpdLoggerIMPL())
+    Logger::Logger() :
+        logger_(new SpdLoggerIMPL())
     {
     }
+
     void Logger::init(const std::string& app_name, const std::string& logName, const std::string& logDir,
                       Level logLevel, const bool consoleOutput, const bool fileOutput, size_t maxFileSize,
                       size_t maxFiles) const
@@ -354,9 +363,9 @@ namespace jade
 #ifdef SPDLOG_ENABLE
         try
         {
-
             CustomFormatter::setAppName(app_name);
-            if (logLevel <= S_DEBUG) CustomFormatter::setShowLineNumbers(true);
+            if (logLevel <= S_DEBUG)
+                CustomFormatter::setShowLineNumbers(true);
 
             std::vector<spdlog::sink_ptr> sinks;
 
@@ -377,7 +386,8 @@ namespace jade
 #else
                 std::filesystem::create_directories(logDir);
 #endif
-                const auto fileSink = std::make_shared<spdlog::sinks::rotating_file_sink_mt>(logDir + "/" + logName + ".log", maxFileSize, maxFiles);
+                const auto fileSink = std::make_shared<spdlog::sinks::rotating_file_sink_mt>(
+                    logDir + "/" + logName + ".log", maxFileSize, maxFiles);
                 auto* custom_formatter = new CustomFormatter(false);
                 fileSink->set_formatter(std::unique_ptr<spdlog::formatter>(custom_formatter));
                 sinks.push_back(fileSink);
@@ -387,7 +397,6 @@ namespace jade
             logger_->sink->set_level(static_cast<spdlog::level::level_enum>(logLevel)); // 默认记录所有级别
             logger_->sink->flush_on(spdlog::level::trace); // 立即刷新
             logger_->initialized_ = true;
-
         }
         catch (const spdlog::spdlog_ex& ex)
         {
@@ -399,10 +408,12 @@ namespace jade
         logger_->initialized_ = true;
 #endif
     }
+
     void Logger::setDllName(const std::string& dllName)
     {
         CustomFormatter::setDllName(dllName);
     }
+
     void Logger::trace(const std::string& message, const char* file, const int line) const
     {
         log(S_TRACE, message, file, line);
@@ -427,7 +438,8 @@ namespace jade
     {
         log(S_ERROR, message, file, line);
     }
-    void Logger::getError(const std::string&message,const int exitCode,const char* file,const int line) const
+
+    void Logger::getError(const std::string& message, const int exitCode, const char* file, const int line) const
     {
         if (exitCode != 0)
         {
@@ -437,13 +449,15 @@ namespace jade
             exit(exitCode);
         }
     }
+
     void Logger::critical(const std::string& message, const int exitCode, const char* file, const int line) const
     {
         getError(message, exitCode, file, line);
         log(S_CRITICAL, message, file, line);
     }
 
-    void Logger::exception(const std::string& message, const std::string& e, const int exitCode, const char* file, const int line) const
+    void Logger::exception(const std::string& message, const std::string& e, const int exitCode, const char* file,
+                           const int line) const
     {
         std::stringstream ss;
         ss << message << ",失败的原因:" << e;
@@ -454,8 +468,9 @@ namespace jade
     void Logger::log(const Level level, const std::string& message, const char* file, const int line) const
     {
 #if SPDLOG_ENABLE
-        if (logger_->sink) logger_->sink->log(spdlog::source_loc{file, line, SPDLOG_FUNCTION},
-                                              static_cast<spdlog::level::level_enum>(level), message);
+        if (logger_->sink)
+            logger_->sink->log(spdlog::source_loc{file, line, SPDLOG_FUNCTION},
+                               static_cast<spdlog::level::level_enum>(level), message);
 #else
         std::stringstream ss;
         ss << getTimeStampString("%Y-%m-%d %H:%M:%S")   << " - [" << logger_->app_name_ << "] - " ;
@@ -505,16 +520,19 @@ namespace jade
 #if SPDLOG_ENABLE
         if (logger_->initialized_ && !logger_->shutdown_)
         {
-            if (logger_->sink) logger_->sink->set_level(static_cast<spdlog::level::level_enum>(level));
+            if (logger_->sink)
+                logger_->sink->set_level(static_cast<spdlog::level::level_enum>(level));
         }
 #endif
     }
 
-    void Logger::shutDown() const
+    void Logger::shutDown()
     {
+
         if (logger_)
         {
-            logger_->shutDown();
+            delete logger_;
+            logger_ = nullptr;
         }
     }
 }

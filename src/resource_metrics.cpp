@@ -43,6 +43,7 @@ SystemMonitorImpl::ResourceMetrics SystemMonitorImpl::getMetrics()
     getMetrics(metrics);
     return metrics;
 }
+
 void SystemMonitorImpl::getMetrics(ResourceMetrics& metrics)
 {
 #if defined(_WIN32)
@@ -217,7 +218,8 @@ void SystemMonitorImpl::getMetrics(ResourceMetrics& metrics)
 
 #elif defined(__linux__)
     // 内存使用
-    if (std::ifstream statm("/proc/self/statm"); statm.is_open()) {
+    if (std::ifstream statm("/proc/self/statm"); statm.is_open())
+    {
         uint64_t size, resident;
         statm >> size >> resident;
         metrics.memoryUsage = resident * sysconf(_SC_PAGESIZE);
@@ -226,11 +228,12 @@ void SystemMonitorImpl::getMetrics(ResourceMetrics& metrics)
     // CPU使用
     static uint64_t lastTotalTime = 0, lastProcessTime = 0;
     // 获取进程CPU时间
-    std::ifstream procStat("/proc/self/stat");
-    if (procStat.is_open()) {
+    if (std::ifstream procStat("/proc/self/stat"); procStat.is_open())
+    {
         std::string ignore;
         uint64_t utime, stime;
-        for (int i = 0; i < 13; i++) procStat >> ignore;
+        for (int i = 0; i < 13; i++)
+            procStat >> ignore;
         procStat >> utime >> stime;
         uint64_t processTime = utime + stime;
 
@@ -241,7 +244,8 @@ void SystemMonitorImpl::getMetrics(ResourceMetrics& metrics)
         globalStat >> cpuLabel >> user >> nice >> system >> idle;
         uint64_t totalTime = user + nice + system + idle;
 
-        if (lastTotalTime != 0 && lastProcessTime != 0) {
+        if (lastTotalTime != 0 && lastProcessTime != 0)
+        {
             double deltaTotal = totalTime - lastTotalTime;
             double deltaProcess = processTime - lastProcessTime;
             metrics.cpuUsage = (deltaProcess / deltaTotal) * 100.0;
@@ -252,9 +256,11 @@ void SystemMonitorImpl::getMetrics(ResourceMetrics& metrics)
     }
 
     // 磁盘IO
-    if (std::ifstream ioStat("/proc/self/io"); ioStat.is_open()) {
+    if (std::ifstream ioStat("/proc/self/io"); ioStat.is_open())
+    {
         std::string line;
-        while (std::getline(ioStat, line)) {
+        while (std::getline(ioStat, line))
+        {
             if (line.find("rchar") != std::string::npos)
                 sscanf(line.c_str(), "rchar: %lu", &metrics.diskReads);
             else if (line.find("wchar") != std::string::npos)
