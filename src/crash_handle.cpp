@@ -1,9 +1,7 @@
 #include <csignal>
-
 #include "include/jade_tools.h"
 #include <iostream>
 #include <fstream>
-#include <ctime>
 #include <iomanip>
 #include <mutex>
 #include <sstream>
@@ -44,7 +42,7 @@ public:
         // 确保目录存在
         FileTools::createDirectories(dump_path);
 #ifdef _WIN32
-        const std::wstring wide_path = string_to_wstring(dump_path);
+        const std::wstring wide_path = stringToWstring(dump_path);
         handler_ = new google_breakpad::ExceptionHandler(
             wide_path,
             nullptr, // 过滤器回调
@@ -212,7 +210,7 @@ private:
         std::string original_dump_path;
 #ifdef _WIN32
         const std::wstring wpath = std::wstring(dump_path) + L"\\" + std::wstring(minidump_id) + L".dmp";
-        original_dump_path = wstring_to_string(wpath);
+        original_dump_path = wstringToString(wpath);
 #elif __APPLE__
         // macOS 需要特殊处理获取路径
         original_dump_path = getMacDumpPath();

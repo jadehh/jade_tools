@@ -8,9 +8,12 @@
 */
 
 #pragma once
+#ifdef JADE_TOOLS
+#include "jade_tools/jade_tools.h"
+#else
 #include "include/jade_tools.h"
+#endif
 #ifdef OPENCV_ENABLED
 // 设备类型枚举
-
 void testOpencv();
 #endif

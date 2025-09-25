@@ -47,7 +47,8 @@ else()
                     opencv_photo4120
                     opencv_stitching4120
                     opencv_video4120
-                    opencv_videoio4120)
+                    opencv_videoio4120
+                    opencv_cudacodec4120)
         endif ()
     endif ()
     include_directories(${OPENCV_INCLUDE_DIR})

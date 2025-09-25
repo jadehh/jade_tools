@@ -50,9 +50,9 @@ public:
         // 检查是否已存在相同ID的流
         for (const auto& capture : captures)
         {
-            if (capture->getRtspIpAddress() == rtsp_info.ip_address)
+            if (capture->getRtspIpAddress() == rtsp_info.getIpAddress())
             {
-                DLL_LOG_WARN(MODULE_NAME) << "当前ip流地址已经存在,ip地址为:" << rtsp_info.ip_address;
+                DLL_LOG_WARN(MODULE_NAME) << "当前ip流地址已经存在,ip地址为:" << rtsp_info.getIpAddress();
                 return;
             }
         }

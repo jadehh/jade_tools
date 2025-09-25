@@ -2,12 +2,11 @@
 #include <functional>
 
 // 使用示例 - 图像处理回调函数
-void processCpuFrame(const jade::RtspVideoCapture::RtspInfo& rtsp_info,
-                     const cv::Mat& frame)
+#ifdef OPENCV_ENABLED
+void processCpuFrame(const jade::RtspVideoCapture::RtspInfo& rtsp_info, const cv::Mat& frame)
 {
     // 在这里处理图像帧
-    LOG_TRACE() << "CPU解码成功,相机类型为:" << rtsp_info.camera_name
-        << ",抓拍照片成功";
+    LOG_TRACE() << "CPU解码成功,相机类型为:" << rtsp_info.getCameraName() << ",抓拍照片成功";
     // 可以在这里添加你的图像处理逻辑
     // 例如：目标检测、人脸识别、运动检测等
     // 显示处理后的图像（可选）
@@ -17,7 +16,7 @@ void processGpuFrame(const jade::RtspVideoCapture::RtspInfo& rtsp_info,
                      const cv::cuda::GpuMat& frame)
 {
     // 在这里处理图像帧
-    LOG_TRACE() << "Gpu解码成功,相机类型为:" << rtsp_info.camera_name
+    LOG_TRACE() << "Gpu解码成功,相机类型为:" << rtsp_info.getCameraName()
         << ",抓拍照片成功";
     // 可以在这里添加你的图像处理逻辑
     // 例如：目标检测、人脸识别、运动检测等
@@ -48,3 +47,4 @@ void testOpencv()
         jade::MultiRtspManager::getInstance().addStream(rtsp);
     }
 }
+#endif

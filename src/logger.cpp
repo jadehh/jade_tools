@@ -30,6 +30,7 @@ using namespace std::filesystem;
 #endif
 #include <string>
 #include <utility>
+using namespace jade;
 #define MODULE_NAME "Logger"
 
 class CustomFormatter final : public spdlog::formatter
@@ -160,317 +161,331 @@ private:
     bool is_console_sink_ = false; // 新增：标识是否为控制台输出
 };
 
-namespace jade
+class Logger::SpdLoggerIMPL
 {
-    class LoggerStream::Impl
+public:
+    bool initialized_ = false;
+    bool shutdown_ = false;
+
+    ~SpdLoggerIMPL()
     {
-    public:
-        Impl(const Logger::Level level, const char* file, const int line, const int exitCode, std::string exceptionMsg):
-            level_(level), line_(line), exitCode_(exitCode), file_(file), moduleName_(""),
-            exceptionMsg_(std::move(exceptionMsg))
-        {
-        }
-
-        void setModuleName(const char* moduleName) { moduleName_ = moduleName; }
-        void setStream(const char* value) { buffer_ << value; }
-        void setStream(const int value) { buffer_ << value; }
-        void setStream(const double value) { buffer_ << value; }
-        void setStream(const float value) { buffer_ << value; }
-        void setStream(const std::string& value) { buffer_ << value; }
-        void setStream(const bool value) { buffer_ << value; }
-        void setStream(const long value) { buffer_ << value; }
-
-        void log() const
-        {
-            CustomFormatter::setDllName(moduleName_);
-            switch (level_)
-            {
-            case Logger::Level::S_TRACE:
-                Logger::getInstance().trace(buffer_.str(), file_, line_);
-                break;
-            case Logger::Level::S_DEBUG:
-                Logger::getInstance().debug(buffer_.str(), file_, line_);
-                break;
-            case Logger::Level::S_INFO:
-                Logger::getInstance().info(buffer_.str(), file_, line_);
-                break;
-            case Logger::Level::S_WARNING:
-                Logger::getInstance().warn(buffer_.str(), file_, line_);
-                break;
-            case Logger::Level::S_ERROR:
-                Logger::getInstance().error(buffer_.str(), file_, line_);
-                break;
-            case Logger::Level::S_CRITICAL:
-                Logger::getInstance().critical(buffer_.str(), exitCode_, file_, line_);
-                break;
-            case Logger::Level::S_EXCEPTION:
-                Logger::getInstance().exception(buffer_.str(), exceptionMsg_, exitCode_, file_, line_);
-                break;
-            default:
-                break;
-            }
-        }
-
-    private:
-        Logger::Level level_;
-        std::ostringstream buffer_;
-        int line_, exitCode_;
-        const char* file_;
-        const char* moduleName_;
-        std::string exceptionMsg_;
-    };
-
-    void DLLLoggerStream::setModuleName(const char* moduleName) const
-    {
-        getImpl()->setModuleName(moduleName);
-    }
-
-    DLLLoggerStream::DLLLoggerStream(const Logger::Level level, const char* file, const int line,
-                                     const char* moduleName, const int exitCode, const std::string& e):
-        LoggerStream(level, file, line, exitCode, e)
-    {
-        setModuleName(moduleName);
-    }
-
-    LoggerStream::LoggerStream(const Logger::Level level, const char* file, const int line, const int exitCode,
-                               const std::string& e) :
-        impl_(new Impl(level, file, line, exitCode, e))
-    {
-    }
-
-    LoggerStream::Impl* LoggerStream::getImpl() const
-    {
-        return impl_;
-    }
-
-    LoggerStream& LoggerStream::operator<<(const char* value)
-    {
-        impl_->setStream(value);
-        return *this;
-    }
-
-    LoggerStream& LoggerStream::operator<<(const std::string& value)
-    {
-        impl_->setStream(value);
-        return *this;
-    }
-
-    LoggerStream& LoggerStream::operator<<(const int value)
-    {
-        impl_->setStream(value);
-        return *this;
-    }
-
-    LoggerStream& LoggerStream::operator<<(const double value)
-    {
-        impl_->setStream(value);
-        return *this;
-    }
-
-    LoggerStream& LoggerStream::operator<<(const float value)
-    {
-        impl_->setStream(value);
-        return *this;
-    }
-
-    LoggerStream& LoggerStream::operator<<(const bool value)
-    {
-        impl_->setStream(value);
-        return *this;
-    }
-
-    LoggerStream& LoggerStream::operator<<(long value)
-    {
-        impl_->setStream(value);
-        return *this;
-    }
-
-
-    void LoggerStream::setStream(const char* value) const
-    {
-        impl_->setStream(value);
-    }
-
-    void LoggerStream::setStream(const int value) const
-    {
-        impl_->setStream(value);
-    }
-
-    void LoggerStream::setStream(const std::string& value) const
-    {
-        impl_->setStream(value);
-    }
-
-    void LoggerStream::setStream(const double value) const
-    {
-        impl_->setStream(value);
-    }
-
-    void LoggerStream::setStream(const float value) const
-    {
-        impl_->setStream(value);
-    }
-
-    void LoggerStream::setStream(const long value) const
-    {
-        impl_->setStream(value);
-    }
-
-    LoggerStream::~LoggerStream()
-    {
-        impl_->log();
-    }
-
-    Logger& Logger::getInstance()
-    {
-        static Logger instance;
-        return instance;
-    }
-
-    class SpdLoggerIMPL
-    {
-    public:
-        bool initialized_ = false;
-        bool shutdown_ = false;
-
-        ~SpdLoggerIMPL()
-        {
-            DLL_LOG_TRACE(MODULE_NAME) << "关闭日志完成";
-            shutdown_ = true;
-            initialized_ = true;
+        DLL_LOG_TRACE(MODULE_NAME) << "关闭日志完成";
+        shutdown_ = true;
+        initialized_ = true;
 #ifdef SPDLOG_ENABLE
-            sink.reset();
+        sink.reset();
 #endif
-        }
+    }
 #ifdef SPDLOG_ENABLE
-        std::shared_ptr<spdlog::logger> sink = nullptr;
+    std::shared_ptr<spdlog::logger> sink = nullptr;
 #endif
-        // 正确的构造函数
-        SpdLoggerIMPL() = default;
+    // 正确的构造函数
+    SpdLoggerIMPL() = default;
 
-    };
+};
 
-    Logger::Logger() :
-        logger_(new SpdLoggerIMPL())
+class LoggerStream::Impl
+{
+public:
+    Impl(const Logger::Level level, const char* file, const int line, const int exitCode, std::string exceptionMsg):
+        level_(level), line_(line), exitCode_(exitCode), file_(file), moduleName_(""),
+        exceptionMsg_(std::move(exceptionMsg))
     {
     }
 
-    void Logger::init(const std::string& app_name, const std::string& logName, const std::string& logDir,
-                      Level logLevel, const bool consoleOutput, const bool fileOutput, size_t maxFileSize,
-                      size_t maxFiles) const
+    void setModuleName(const char* moduleName) { moduleName_ = moduleName; }
+    void setStream(const char* value) { buffer_ << value; }
+    void setStream(const int value) { buffer_ << value; }
+    void setStream(const double value) { buffer_ << value; }
+    void setStream(const float value) { buffer_ << value; }
+    void setStream(const std::string& value) { buffer_ << value; }
+    void setStream(const bool value) { buffer_ << value; }
+    void setStream(const long value) { buffer_ << value; }
+    void setStream(const unsigned int value) { buffer_ << value; }
 
+
+    void log() const
     {
-#ifdef SPDLOG_ENABLE
-        try
+        CustomFormatter::setDllName(moduleName_);
+        switch (level_)
         {
-            CustomFormatter::setAppName(app_name);
-            if (logLevel <= S_DEBUG)
-                CustomFormatter::setShowLineNumbers(true);
+        case Logger::Level::S_TRACE:
+            Logger::getInstance().trace(buffer_.str(), file_, line_);
+            break;
+        case Logger::Level::S_DEBUG:
+            Logger::getInstance().debug(buffer_.str(), file_, line_);
+            break;
+        case Logger::Level::S_INFO:
+            Logger::getInstance().info(buffer_.str(), file_, line_);
+            break;
+        case Logger::Level::S_WARNING:
+            Logger::getInstance().warn(buffer_.str(), file_, line_);
+            break;
+        case Logger::Level::S_ERROR:
+            Logger::getInstance().error(buffer_.str(), file_, line_);
+            break;
+        case Logger::Level::S_CRITICAL:
+            Logger::getInstance().critical(buffer_.str(), exitCode_, file_, line_);
+            break;
+        case Logger::Level::S_EXCEPTION:
+            Logger::getInstance().exception(buffer_.str(), exceptionMsg_, exitCode_, file_, line_);
+            break;
+        default:
+            break;
+        }
+    }
 
-            std::vector<spdlog::sink_ptr> sinks;
+private:
+    Logger::Level level_;
+    std::ostringstream buffer_;
+    int line_, exitCode_;
+    const char* file_;
+    const char* moduleName_;
+    std::string exceptionMsg_;
+};
 
-            // 控制台输出
-            if (consoleOutput)
-            {
-                const auto consoleSink = std::make_shared<spdlog::sinks::stdout_color_sink_mt>();
-                auto* custom_formatter = new CustomFormatter(true);
-                consoleSink->set_formatter(std::unique_ptr<spdlog::formatter>(custom_formatter));
-                sinks.push_back(consoleSink);
-            }
-            // 文件输出
-            if (fileOutput)
-            {
-                // 创建日志目录
+void DLLLoggerStream::setModuleName(const char* moduleName) const
+{
+    getImpl()->setModuleName(moduleName);
+}
+
+DLLLoggerStream::DLLLoggerStream(const Logger::Level level, const char* file, const int line,
+                                 const char* moduleName, const int exitCode, const std::string& e):
+    LoggerStream(level, file, line, exitCode, e)
+{
+    setModuleName(moduleName);
+}
+
+LoggerStream::LoggerStream(const Logger::Level level, const char* file, const int line, const int exitCode,
+                           const std::string& e) :
+    impl_(new Impl(level, file, line, exitCode, e))
+{
+}
+
+LoggerStream::Impl* LoggerStream::getImpl() const
+{
+    return impl_;
+}
+
+LoggerStream& LoggerStream::operator<<(const char* value)
+{
+    impl_->setStream(value);
+    return *this;
+}
+
+LoggerStream& LoggerStream::operator<<(const std::string& value)
+{
+    impl_->setStream(value);
+    return *this;
+}
+
+LoggerStream& LoggerStream::operator<<(const int value)
+{
+    impl_->setStream(value);
+    return *this;
+}
+
+LoggerStream& LoggerStream::operator<<(const double value)
+{
+    impl_->setStream(value);
+    return *this;
+}
+
+LoggerStream& LoggerStream::operator<<(const float value)
+{
+    impl_->setStream(value);
+    return *this;
+}
+
+LoggerStream& LoggerStream::operator<<(const bool value)
+{
+    impl_->setStream(value);
+    return *this;
+}
+
+LoggerStream& LoggerStream::operator<<(const long value)
+{
+    impl_->setStream(value);
+    return *this;
+}
+
+LoggerStream& LoggerStream::operator<<(unsigned int value)
+{
+    impl_->setStream(value);
+    return *this;
+}
+
+
+void LoggerStream::setStream(const char* value) const
+{
+    impl_->setStream(value);
+}
+
+void LoggerStream::setStream(const int value) const
+{
+    impl_->setStream(value);
+}
+
+void LoggerStream::setStream(const std::string& value) const
+{
+    impl_->setStream(value);
+}
+
+void LoggerStream::setStream(const double value) const
+{
+    impl_->setStream(value);
+}
+
+void LoggerStream::setStream(const float value) const
+{
+    impl_->setStream(value);
+}
+
+void LoggerStream::setStream(const long value) const
+{
+    impl_->setStream(value);
+}
+
+void LoggerStream::setStream(const unsigned value) const
+{
+    impl_->setStream(value);
+}
+
+LoggerStream::~LoggerStream()
+{
+    impl_->log();
+}
+
+Logger& Logger::getInstance()
+{
+    static Logger instance;
+    return instance;
+}
+
+
+Logger::Logger() :
+    logger_(new SpdLoggerIMPL())
+{
+}
+
+void Logger::init(const std::string& app_name, const std::string& logName, const std::string& logDir,
+                  Level logLevel, const bool consoleOutput, const bool fileOutput, size_t maxFileSize,
+                  size_t maxFiles) const
+
+{
+#ifdef SPDLOG_ENABLE
+    try
+    {
+        CustomFormatter::setAppName(app_name);
+        if (logLevel <= S_DEBUG)
+            CustomFormatter::setShowLineNumbers(true);
+
+        std::vector<spdlog::sink_ptr> sinks;
+
+        // 控制台输出
+        if (consoleOutput)
+        {
+            const auto consoleSink = std::make_shared<spdlog::sinks::stdout_color_sink_mt>();
+            std::unique_ptr<spdlog::formatter> formater = std::make_unique<CustomFormatter>(true);
+            consoleSink->set_formatter(std::move(formater));
+            sinks.push_back(consoleSink);
+
+
+        }
+        // 文件输出
+        if (fileOutput)
+        {
+            // 创建日志目录
 #ifdef LOW_GCC
-                std::experimental::filesystem::create_directories(logDir);
+            std::experimental::filesystem::create_directories(logDir);
 #else
                 std::filesystem::create_directories(logDir);
 #endif
-                const auto fileSink = std::make_shared<spdlog::sinks::rotating_file_sink_mt>(
-                    logDir + "/" + logName + ".log", maxFileSize, maxFiles);
-                auto* custom_formatter = new CustomFormatter(false);
-                fileSink->set_formatter(std::unique_ptr<spdlog::formatter>(custom_formatter));
-                sinks.push_back(fileSink);
-            }
-            logger_->sink = std::make_shared<spdlog::logger>(logName, begin(sinks), end(sinks));
-            // 创建logger
-            logger_->sink->set_level(static_cast<spdlog::level::level_enum>(logLevel)); // 默认记录所有级别
-            logger_->sink->flush_on(spdlog::level::trace); // 立即刷新
-            logger_->initialized_ = true;
+            const auto fileSink = std::make_shared<spdlog::sinks::rotating_file_sink_mt>(
+                logDir + "/" + logName + ".log", maxFileSize, maxFiles);
+            std::unique_ptr<spdlog::formatter> formater = std::make_unique<CustomFormatter>(false);
+            fileSink->set_formatter(std::move(formater));
+            sinks.push_back(fileSink);
         }
-        catch (const spdlog::spdlog_ex& ex)
-        {
-            // 如果初始化失败，使用默认logger
-            logger_->sink = spdlog::stdout_color_mt(logName);
-            logger_->sink->error("Logger initialization failed: " + std::string(ex.what()));
-        }
+        logger_->sink = std::make_shared<spdlog::logger>(logName, begin(sinks), end(sinks));
+        // 创建logger
+        logger_->sink->set_level(static_cast<spdlog::level::level_enum>(logLevel)); // 默认记录所有级别
+        logger_->sink->flush_on(spdlog::level::trace); // 立即刷新
+        logger_->initialized_ = true;
+    }
+    catch (const spdlog::spdlog_ex& ex)
+    {
+        // 如果初始化失败，使用默认logger
+        logger_->sink = spdlog::stdout_color_mt(logName);
+        logger_->sink->error("Logger initialization failed: " + std::string(ex.what()));
+    }
 #else
         logger_->initialized_ = true;
 #endif
-    }
+}
 
-    void Logger::setDllName(const std::string& dllName)
-    {
-        CustomFormatter::setDllName(dllName);
-    }
+void Logger::setDllName(const std::string& dllName)
+{
+    CustomFormatter::setDllName(dllName);
+}
 
-    void Logger::trace(const std::string& message, const char* file, const int line) const
-    {
-        log(S_TRACE, message, file, line);
-    }
+void Logger::trace(const std::string& message, const char* file, const int line) const
+{
+    log(S_TRACE, message, file, line);
+}
 
-    void Logger::debug(const std::string& message, const char* file, const int line) const
-    {
-        log(S_DEBUG, message, file, line);
-    }
+void Logger::debug(const std::string& message, const char* file, const int line) const
+{
+    log(S_DEBUG, message, file, line);
+}
 
-    void Logger::info(const std::string& message, const char* file, const int line) const
-    {
-        log(S_INFO, message, file, line);
-    }
+void Logger::info(const std::string& message, const char* file, const int line) const
+{
+    log(S_INFO, message, file, line);
+}
 
-    void Logger::warn(const std::string& message, const char* file, const int line) const
-    {
-        log(S_WARNING, message, file, line);
-    }
+void Logger::warn(const std::string& message, const char* file, const int line) const
+{
+    log(S_WARNING, message, file, line);
+}
 
-    void Logger::error(const std::string& message, const char* file, const int line) const
-    {
-        log(S_ERROR, message, file, line);
-    }
+void Logger::error(const std::string& message, const char* file, const int line) const
+{
+    log(S_ERROR, message, file, line);
+}
 
-    void Logger::getError(const std::string& message, const int exitCode, const char* file, const int line) const
+void Logger::getError(const std::string& message, const int exitCode, const char* file, const int line) const
+{
+    if (exitCode != 0)
     {
-        if (exitCode != 0)
-        {
-            std::ostringstream ss;
-            ss << message << ",程序退出,退出代码为:" << exitCode;
-            log(S_CRITICAL, ss.str(), file, line);
-            exit(exitCode);
-        }
-    }
-
-    void Logger::critical(const std::string& message, const int exitCode, const char* file, const int line) const
-    {
-        getError(message, exitCode, file, line);
-        log(S_CRITICAL, message, file, line);
-    }
-
-    void Logger::exception(const std::string& message, const std::string& e, const int exitCode, const char* file,
-                           const int line) const
-    {
-        std::stringstream ss;
-        ss << message << ",失败的原因:" << e;
-        getError(ss.str(), exitCode, file, line);
+        std::ostringstream ss;
+        ss << message << ",程序退出,退出代码为:" << exitCode;
         log(S_CRITICAL, ss.str(), file, line);
+        exit(exitCode);
     }
+}
 
-    void Logger::log(const Level level, const std::string& message, const char* file, const int line) const
-    {
+void Logger::critical(const std::string& message, const int exitCode, const char* file, const int line) const
+{
+    getError(message, exitCode, file, line);
+    log(S_CRITICAL, message, file, line);
+}
+
+void Logger::exception(const std::string& message, const std::string& e, const int exitCode, const char* file,
+                       const int line) const
+{
+    std::stringstream ss;
+    ss << message << ",失败的原因:" << e;
+    getError(ss.str(), exitCode, file, line);
+    log(S_CRITICAL, ss.str(), file, line);
+}
+
+void Logger::log(const Level level, const std::string& message, const char* file, const int line) const
+{
 #if SPDLOG_ENABLE
-        if (logger_->sink)
-            logger_->sink->log(spdlog::source_loc{file, line, SPDLOG_FUNCTION},
-                               static_cast<spdlog::level::level_enum>(level), message);
+    if (logger_->sink)
+        logger_->sink->log(spdlog::source_loc{file, line, SPDLOG_FUNCTION},
+                           static_cast<spdlog::level::level_enum>(level), message);
 #else
         std::stringstream ss;
         ss << getTimeStampString("%Y-%m-%d %H:%M:%S")   << " - [" << logger_->app_name_ << "] - " ;
@@ -512,27 +527,26 @@ namespace jade
         std::cout << ss.str();
         ConsoleColor::reset();
 #endif
-    }
+}
 
 
-    void Logger::setLevel(const Level level) const
-    {
+void Logger::setLevel(const Level level) const
+{
 #if SPDLOG_ENABLE
-        if (logger_->initialized_ && !logger_->shutdown_)
-        {
-            if (logger_->sink)
-                logger_->sink->set_level(static_cast<spdlog::level::level_enum>(level));
-        }
-#endif
-    }
-
-    void Logger::shutDown()
+    if (logger_->initialized_ && !logger_->shutdown_)
     {
+        if (logger_->sink)
+            logger_->sink->set_level(static_cast<spdlog::level::level_enum>(level));
+    }
+#endif
+}
 
-        if (logger_)
-        {
-            delete logger_;
-            logger_ = nullptr;
-        }
+void Logger::shutDown()
+{
+
+    if (logger_)
+    {
+        delete logger_;
+        logger_ = nullptr;
     }
 }

@@ -1,27 +1,15 @@
 #  安装spdlog
 
-## 代码下载
-
+## Windows 32位  安装
 ```bash
-git clone https://github.com/gabime/spdlog.git
-```
-
-## Windows 32位 Release 安装
-```bash
-cd spdlog && mkdir build_x86 && cd build_x86
-"C:\Program Files (x86)\Microsoft Visual Studio\2017\Community\VC\Auxiliary\Build\vcvars32.bat"
-cmake -G "Visual Studio 15 2017" -A Win32 -DCMAKE_INSTALL_PREFIX="D:\SDKS\spdlog\x86" -D SPDLOG_BUILD_EXAMPLE=OFF .. 
-cmake --build . --config Release --target install
+vcpkg install spdlog:x86-windows
 ```
 
 
 
-## Windows 64位 Release 安装
+## Windows 64位  安装
 ```bash
-cd spdlog && mkdir build_x64 && cd build_x64
-"C:\Program Files (x86)\Microsoft Visual Studio\2017\Community\VC\Auxiliary\Build\vcvars64.bat"
-cmake -G "Visual Studio 15 2017" -A x64 -DCMAKE_INSTALL_PREFIX="D:\SDKS\spdlog\x64" -D SPDLOG_BUILD_EXAMPLE=OFF .. 
-cmake --build . --config Release --target install
+vcpkg install spdlog:x64-windows
 ```
 
 

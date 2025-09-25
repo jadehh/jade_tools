@@ -80,7 +80,7 @@ int ini_parse_stream(ini_reader reader, void* stream, ini_handler handler,
 #define INI_ALLOW_INLINE_COMMENTS 1
 #endif
 #ifndef INI_INLINE_COMMENT_PREFIXES
-#define INI_INLINE_COMMENT_PREFIXES ";"
+#define INI_INLINE_COMMENT_PREFIXES ";#"
 #endif
 
 /* Nonzero to use stack, zero to use heap (malloc/free). */
@@ -271,7 +271,11 @@ inline int ini_parse_stream(ini_reader reader, void* stream,
                     *end = '\0';
 #endif
                 rstrip(value);
-
+                // +++ 新增：去除值两端的引号 +++
+                if (value[0] == '"' && value[strlen(value)-1] == '"') {
+                    memmove(value, value+1, strlen(value)); // 去掉开头的 "
+                    value[strlen(value)-1] = '\0';          // 去掉结尾的 "
+                }
                 /* Valid name[=:]value pair found, call handler */
                 strncpy0(prev_name, name, sizeof(prev_name));
                 if (!handler(user, section, name, value) && !error)

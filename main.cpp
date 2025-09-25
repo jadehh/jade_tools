@@ -6,11 +6,7 @@
 # @Software : Samples
 # @Desc     : main.cpp
 */
-#ifdef JADE_TOOLS
-#include "jade_tools/jade_tools.h"
-#else
-#include "include/jade_tools.h"
-#endif
+#include <iostream>
 #include "test/test.h"
 
 void cleanup()
@@ -37,6 +33,8 @@ int main(const int argc, char* argv[])
     testSocketServer(); // Socket 服务类
     // testAdapter();// 单例类 加密狗监听类
     testInIReader();
+    jade::toHexString(1);
+    std::string seqNumber = jade::getSeqNumber();
     // jade::CrashHandler::getInstance().triggerTestCrash();
     // // 主线程工作...
     // std::this_thread::sleep_for(std::chrono::milliseconds(13300));

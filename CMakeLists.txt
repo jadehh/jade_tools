@@ -6,7 +6,7 @@ if(CMAKE_GENERATOR_PLATFORM)
     if (CMAKE_GENERATOR_PLATFORM STREQUAL "Win32")
         set(TARGET_ARCHITECTURE "x86")
     else ()
-        set(TARGET_ARCHITECTURE ${CMAKE_GENERATOR_PLATFORM})
+        set(TARGET_ARCHITECTURE "x64")
     endif ()
 else()
     # 否则，根据指针大小判断
@@ -52,13 +52,12 @@ if(JADE_BUILD_EXAMPLES)
     if (BUILD_SHARED)
         include(findJadeTools)
         add_executable(examples_shared main.cpp )
-        MESSAGE(${JADE_TOOLS_LIBS})
-        target_link_libraries(examples_shared ${CUDA_LIBS} ${OPENSSL_LIBS} ${SQLITE3_LIBS} ${JADE_TOOLS_LIBS}  ${BREAKPAD_LIBS} ${HASP_ADAPTER_LIBS}  ${OPENCV_LIBS} jade_test)
+        target_link_libraries(examples_shared ${NVML_LIBS} ${OPENSSL_LIBS} ${SQLITE3_LIBS} ${JADE_TOOLS_LIBS}  ${BREAKPAD_LIBS} ${HASP_ADAPTER_LIBS}  ${OPENCV_LIBS} jade_test)
         target_compile_definitions(examples_shared PRIVATE JADE_TOOLS)
     else ()
         add_executable(examples main.cpp ${SRCS})
         set(CMAKE_INTERPROCEDURAL_OPTIMIZATION TRUE)
-        target_link_libraries(examples ${CUDA_LIBS} ${OPENSSL_LIBS} ${SQLITE3_LIBS} ${BREAKPAD_LIBS} ${SPDLOG_LIBS} ${HASP_ADAPTER_LIBS}  ${OPENCV_LIBS}  jade_test )
+        target_link_libraries(examples ${NVML_LIBS} ${OPENSSL_LIBS} ${SQLITE3_LIBS} ${BREAKPAD_LIBS} ${SPDLOG_LIBS} ${HASP_ADAPTER_LIBS}  ${OPENCV_LIBS}  jade_test )
         if(WIN32)
             target_compile_definitions(examples PRIVATE JADE_TOOLS_EXPORTS)
         endif()
@@ -86,13 +85,22 @@ else ()
         set_target_properties(${APP_NAME} PROPERTIES DEBUG_POSTFIX "d")
     endif ()
     target_compile_definitions(${APP_NAME} PRIVATE JADE_TOOLS_EXPORTS)
-    target_link_libraries(${APP_NAME} ${CUDA_LIBS} ${OPENSSL_LIBS}  ${SQLITE3_LIBS} ${BREAKPAD_LIBS}  ${HASP_ADAPTER_LIBS}  ${OPENCV_LIBS})
+    target_link_libraries(${APP_NAME} ${NVML_LIBS} ${OPENSSL_LIBS}  ${SQLITE3_LIBS} ${BREAKPAD_LIBS}  ${HASP_ADAPTER_LIBS}  ${OPENCV_LIBS})
+    set(WIN32_PREFIX "")
+    if(WIN32)
+        set(WIN32_PREFIX "${TARGET_ARCHITECTURE}-windows")
+        if(CMAKE_BUILD_TYPE STREQUAL "Debug")
+            set(WIN32_PREFIX "${WIN32_PREFIX}/Debug")
+        endif()
+    endif()
 
-    # 导出目标供find_package使用
     install(TARGETS ${APP_NAME}
-            ARCHIVE DESTINATION lib
-            LIBRARY DESTINATION bin
-            RUNTIME DESTINATION bin
+            ARCHIVE DESTINATION ${WIN32_PREFIX}/lib
+            LIBRARY DESTINATION ${WIN32_PREFIX}/bin
+            RUNTIME DESTINATION ${WIN32_PREFIX}/bin
     )
-    install(FILES  include/jade_tools.h DESTINATION include/jade_tools/)
+
+    install(FILES include/jade_tools.h
+            DESTINATION ${TARGET_ARCHITECTURE}-windows/include/jade_tools/
+    )
 endif()

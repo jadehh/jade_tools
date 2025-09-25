@@ -6,11 +6,6 @@
 # @Software : Samples
 # @Desc     : testLog.cpp
 */
-#ifdef JADE_TOOLS
-#include "jade_tools/jade_tools.h"
-#else
-#include "include/jade_tools.h"
-#endif
 #include "test/include/testLog.h"
 #include <thread>
 

@@ -10,6 +10,10 @@
 #include <algorithm>
 #include <cctype>
 #include "include/ini_reader.h"
+#include <iostream>
+#define MODULE_NAME "INIReader"
+#define LOG_INIREADER_WARN(section,name,default_value)  DLL_LOG_WARN(MODULE_NAME) << "节点名:\"" << (section) << "\"" << ",字段名: \"" << (name) << "\",读取异常,请检查配置文件,使用默认值:" << (default_value);
+
 using namespace jade;
 
 
@@ -51,7 +55,7 @@ inline int INIReader::Impl::ValueHandler(void* user, const char* section, const 
     const auto impl = static_cast<Impl*>(user);
     const std::string key = MakeKey(section, name);
     auto values = impl->_values;
-    if (impl->_values[key].size() > 0)
+    if (!impl->_values[key].empty())
         impl->_values[key] += "\n";
     impl->_values[key] += value;
     impl->_sections.insert(section);
@@ -88,6 +92,10 @@ std::string INIReader::Get(const std::string& section,
                            const std::string& default_value) const
 {
     const std::string key = Impl::MakeKey(section, name);
+    if (! impl_->_values.count(key) && !default_value.empty())
+    {
+        LOG_INIREADER_WARN(section, name, default_value);
+    }
     return impl_->_values.count(key) ? impl_->_values[key] : default_value;
 }
 
@@ -95,11 +103,15 @@ long INIReader::GetInteger(const std::string& section,
                            const std::string& name,
                            const long default_value) const
 {
-    std::string valstr = Get(section, name, "");
-    const char* value = valstr.c_str();
+    const std::string valStr = Get(section, name, "");
+    const char* value = valStr.c_str();
     char* end;
     // This parses "1234" (decimal) and also "0x4D2" (hex)
-    long n = strtol(value, &end, 0);
+    const long n = strtol(value, &end, 0);
+    if (end <= value)
+    {
+        LOG_INIREADER_WARN(section, name, default_value);
+    }
     return end > value ? n : default_value;
 }
 
@@ -107,21 +119,29 @@ double INIReader::GetReal(const std::string& section,
                           const std::string& name,
                           const double default_value) const
 {
-    std::string valstr = Get(section, name, "");
-    const char* value = valstr.c_str();
+    const std::string valStr = Get(section, name, "");
+    const char* value = valStr.c_str();
     char* end;
-    double n = strtod(value, &end);
+    const double n = strtod(value, &end);
+    if (end <= value)
+    {
+        LOG_INIREADER_WARN(section, name, default_value);
+    }
     return end > value ? n : default_value;
 }
 
 float INIReader::GetFloat(const std::string& section,
                           const std::string& name,
-                          float default_value) const
+                          const float default_value) const
 {
-    std::string valstr = Get(section, name, "");
-    const char* value = valstr.c_str();
+    const std::string valStr = Get(section, name, "");
+    const char* value = valStr.c_str();
     char* end;
     const float n = strtof(value, &end);
+    if (end <= value)
+    {
+        LOG_INIREADER_WARN(section, name, default_value);
+    }
     return end > value ? n : default_value;
 }
 
@@ -129,13 +149,14 @@ bool INIReader::GetBoolean(const std::string& section,
                            const std::string& name,
                            const bool default_value) const
 {
-    std::string valstr = Get(section, name, "");
+    std::string valStr = Get(section, name, "");
     // Convert to lower case to make string comparisons case-insensitive
-    std::transform(valstr.begin(), valstr.end(), valstr.begin(), ::tolower);
-    if (valstr == "true" || valstr == "yes" || valstr == "on" || valstr == "1")
+    std::transform(valStr.begin(), valStr.end(), valStr.begin(), ::tolower);
+    if (valStr == "true" || valStr == "yes" || valStr == "on" || valStr == "1")
         return true;
-    if (valstr == "false" || valstr == "no" || valstr == "off" ||
-        valstr == "0")
+    if (valStr == "false" || valStr == "no" || valStr == "off" ||
+        valStr == "0")
         return false;
+    LOG_INIREADER_WARN(section, name, default_value);
     return default_value;
 }

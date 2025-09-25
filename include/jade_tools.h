@@ -16,7 +16,6 @@
 #include <functional>
 #include <map>
 #include <set>
-#include <thread>
 #include <variant>
 #include <vector>
 #ifdef _WIN32
@@ -60,13 +59,45 @@
 // 核心功能命名空间
 namespace jade
 {
-    struct jade_time : tm
+     struct JADE_API jade_time : tm
     {
         int tm_millis;
     };
 
 
-    JADE_API const char* getVersion();
+
+    /**
+     * ip地址转Int
+     * @param ip
+     * @return
+     */
+    JADE_API uint32_t getIpAsInt(const char* ip) ;
+    /**
+     * ip地址转Int
+     * @param ip
+     * @return
+     */
+    JADE_API uint32_t getIpAsInt(const std::string& ip) ;
+
+
+    /**
+     * int地址转Ip地址
+     * @param ip
+     * @return
+     */
+    JADE_API  std::string  getIntAsIp(uint32_t ip);
+    /**
+     * 通过Socket获取本机ip地址
+     * @param ip
+     * @return
+     */
+    JADE_API  std::string getLocalIP(const std::string& ip);
+
+    /**
+     * 获取版本
+     * @return
+     */
+    JADE_API  std::string getVersion();
     /**
     * 打印水平居中表格
     * @param headers  表头
@@ -92,13 +123,25 @@ namespace jade
      * @param str
      * @return
      */
-    std::wstring string_to_wstring(const std::string& str);
+    JADE_API std::wstring stringToWstring(const std::string& str);
     /**
      * WString转String
      * @param w_str
      * @return
      */
-    std::string wstring_to_string(const std::wstring& w_str);
+    JADE_API std::string wstringToString(const std::wstring& w_str);
+    /**
+     * int 转 Hex
+     * @param code
+     * @return
+     */
+    JADE_API std::string toHexString(int code);
+    /**
+     * int 转 Hex
+     * @param code
+     * @return
+     */
+    JADE_API std::string toHexString(unsigned int code);
 
 #ifdef _WIN32
     /**
@@ -106,47 +149,47 @@ namespace jade
      * @param code
      * @return
      */
-    std::string to_hex_string(DWORD code);
+    JADE_API std::string toHexString(DWORD code);
 
     /**
     * 将字节转换为易读格式
     * @param bytes
     * @return
     */
-    std::string formatBytes(SIZE_T bytes);
+    JADE_API std::string formatBytes(SIZE_T bytes);
     /**
      *
      * @param bytes
      * @return
      */
-    double bytesToMB(SIZE_T bytes);
+    JADE_API double bytesToMB(SIZE_T bytes);
 #endif
     // 检查文件扩展名是否为图片格式
     JADE_API bool isImageFile(const std::string& path);
     // 保留2位小数点
-    std::string formatValue(const double& value, int precision = 2, bool fixed = true);
-    std::string formatValue(int& value, int precision = 2, bool fixed = true);
+    JADE_API std::string formatValue(const double& value, int precision = 2, bool fixed = true);
+    JADE_API std::string formatValue(const int& value, int precision = 2, bool fixed = true);
 
     /**
      * 获取操作系统名称
      * @reutrn   名称
      */
-    std::string getOperatingSystemName();
+    JADE_API std::string getOperatingSystemName();
     /**
      * 时间相关
      * @return
      */
-    jade_time getTimeStamp();
-    std::string getTimeStampString(const jade_time& time, const char* fmt_arg = "[%Y-%m-%d %H:%M:%S]", bool with_milliseconds = false);
-    std::string getTimeStampString(const char* fmt_arg = "[%Y-%m-%d %H:%M:%S]", bool with_milliseconds = false);
-    std::string timePointToTimeString(std::chrono::time_point<std::chrono::system_clock> clock, const char* fmt_arg = "[%Y-%m-%d %H:%M:%S]",
+    JADE_API jade_time  getTimeStamp();
+    JADE_API std::string getTimeStampString(const jade_time& time, const char* fmt_arg = "[%Y-%m-%d %H:%M:%S]", bool with_milliseconds = false);
+    JADE_API std::string getTimeStampString(const char* fmt_arg = "[%Y-%m-%d %H:%M:%S]", bool with_milliseconds = false);
+    JADE_API std::string timePointToTimeString(std::chrono::time_point<std::chrono::system_clock> clock, const char* fmt_arg = "[%Y-%m-%d %H:%M:%S]",
                                       bool with_milliseconds = false);
 
     /**
-     * 资源清理函数
+     * 获取序列号
+     * @return
      */
-    JADE_API void jadeToolsClean();
-
+    JADE_API std::string getSeqNumber();
 
     /**
      * ####################ConsoleColor###########################
@@ -194,7 +237,6 @@ namespace jade
      * ####################Logger###########################
      */
 
-    class SpdLoggerIMPL;
 
     class JADE_API Logger
     {
@@ -241,6 +283,7 @@ namespace jade
         static void setDllName(const std::string& dllName);
 
     private:
+        class SpdLoggerIMPL;
         // 立即刷新日志
         SpdLoggerIMPL* logger_;
         Logger(); // 私有构造函数
@@ -279,6 +322,7 @@ namespace jade
         LoggerStream& operator<<(float value);
         LoggerStream& operator<<(bool value);
         LoggerStream& operator<<(long value);
+        LoggerStream& operator<<(unsigned int value);
 
         [[nodiscard]] Impl* getImpl() const;
 
@@ -288,6 +332,8 @@ namespace jade
         void setStream(double value) const;
         void setStream(float value) const;
         void setStream(long value) const;
+        void setStream(unsigned value) const;
+
 
     private:
         Impl* impl_;
@@ -670,7 +716,7 @@ namespace jade
         explicit VideoCaptureBase(const std::string& source, bool use_gpu, int frame_interval);
         void start();
         void stop() const;
-        virtual std::string getVideoInfo() const = 0;
+        [[nodiscard]] virtual std::string getVideoInfo() const = 0;
         virtual ~VideoCaptureBase() = default;
         virtual void process(cv::Mat& frame) = 0;
 #ifdef OPENCV_CUDA_ENABLED
@@ -678,7 +724,7 @@ namespace jade
 #endif
     };
 
-    class RtspVideoCapture final : public VideoCaptureBase
+    class JADE_API RtspVideoCapture final : public VideoCaptureBase
     {
     public:
         enum class RtspDeviceType
@@ -698,17 +744,8 @@ namespace jade
             AUDIO_STREAM // 音频流
         };
 
-        struct RtspInfo
+        struct JADE_API RtspInfo
         {
-            std::string camera_name; // 相机名称
-            std::string username; // 用户名
-            std::string password; // 密码
-            std::string ip_address; // IP地址或域名
-            int port; // 端口号，默认为554
-            std::string stream_path; // 流路径
-            bool use_gpu; //是否使用GPU解码
-            int frame_interval; // 参数含义, 每5帧中，你只处理第1帧（或任意指定的一帧），跳过中间的4帧。
-            RtspDeviceType device_type; // 设备类型
             // 构造函数
             RtspInfo();
             RtspInfo(const std::string& camera_name, const std::string& user,
@@ -722,11 +759,19 @@ namespace jade
             // 获取设备类型字符串
             [[nodiscard]] std::string getDeviceTypeString() const;
             // 设置设备类型（支持从字符串设置）
-            void setDeviceTypeFromString(const std::string& type_str);
+            void setDeviceTypeFromString(const std::string& type_str) const;
+            bool getUseGpu() const;
+            [[nodiscard]] std::string getIpAddress() const;
+            int getFrameInterval() const;
+            std::string getUserName() const;
+            std::string getCameraName() const;
             // 检查连接信息是否有效
             [[nodiscard]] bool isValid() const;
             // 清空所有信息
-            void clear();
+            void clear() const;
+        private:
+            class Impl;
+            Impl* impl_;
         };
 
         // 流路径工具类
@@ -745,20 +790,21 @@ namespace jade
         };
 
     private:
-        RtspInfo rtsp_info_;
+        class Impl;
+        Impl* impl_;
 
     public:
         //定义回调函数
         using CpuFrameCallback = std::function<void(RtspInfo, const cv::Mat&)>;
         explicit RtspVideoCapture(const RtspInfo& rtsp_info,
-                                  CpuFrameCallback cpu_frame_callback);
+                                  const CpuFrameCallback& cpu_frame_callback);
 
 #ifdef OPENCV_CUDA_ENABLED
         using GpuFrameCallback = std::function<void(RtspInfo, cv::cuda::GpuMat& gpu_mat)>;
         explicit RtspVideoCapture(const RtspInfo& rtsp_info,
-                                  GpuFrameCallback gpu_frame_callback);
+                                  const GpuFrameCallback& gpu_frame_callback);
         explicit RtspVideoCapture(const RtspInfo& rtsp_info,
-                                  CpuFrameCallback cpu_frame_callback,
+                                  const CpuFrameCallback& cpu_frame_callback,
                                   const GpuFrameCallback& gpu_frame_callback);
 
 #endif
@@ -770,13 +816,12 @@ namespace jade
         [[nodiscard]] std::string getVideoInfo() const override;;
 
     private:
-        CpuFrameCallback cpu_frame_callback_;
-#ifdef OPENCV_CUDA_ENABLED
-        GpuFrameCallback gpu_frame_callback_;
-#endif
+        class CallBackImpl;
+        CallBackImpl* call_back_impl_;
+
     };
 
-    class MultiRtspManager
+    class JADE_API MultiRtspManager
     {
         class Impl;
         Impl* impl_;

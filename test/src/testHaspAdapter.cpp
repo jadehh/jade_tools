@@ -7,7 +7,6 @@
 # @Desc     : testHaspAdapter.cpp
 */
 #include "test/include/testHaspAdapter.h"
-#include "include/jade_tools.h"
 
 void testAdapter()
 {

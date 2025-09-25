@@ -6,9 +6,7 @@
 # @Software : Samples
 # @Desc     : testSocket.cpp
 */
-
 #include "test/include/testSocket.h"
-#include "include/jade_tools.h"
 
 void MessageHandle(const int socket, const std::string& message)
 {

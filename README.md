@@ -24,22 +24,24 @@
 - [x] 支持Opencv Rtsp协议的流管理
 
 
-## 可执行文件Windows编译
-
-### 指定参数
-
+## 指定参数
+### Windows 通用 指定参数
 ```text
--D JADE_BUILD_EXAMPLES=ON -D BREAKPAD_DIR="D:\SDKS\breakpad"  -D SPDLOG_DIR="D:\SDKS\spdlog" -D SQLITE3_DIR="D:\SDKS\sqlite3"  -D OPENSSL_DIR="D:\SDKS\openssl" -D HASP_ADAPTER_DIR="D:\SDKS\hasp_adapter" -D OPENCV_DIR="D:\SDKS\opencv-3.4.5" -D BUILD_SHARED=OFF 
+-D BREAKPAD_DIR="D:\SDKS\vcpkg\installed"  -D SPDLOG_DIR="D:\SDKS\vcpkg\installed" -D SQLITE3_DIR="D:\SDKS\vcpkg\installed"  -D OPENSSL_DIR="D:\SDKS\vcpkg\installed" -D HASP_ADAPTER_DIR="D:\SDKS\vcpkg\installed"
 ```
-### Debug
 
+
+## 可执行文件Windows编译
+### Debug
 ```bash
-cmake -G "Visual Studio 15 2017" -A Win32 -D CMAKE_BUILD_TYPE=Debug .. 指定参数
+cmake 
+-G "Visual Studio 15 2017" -A Win32 -D CMAKE_BUILD_TYPE=Debug -D JADE_BUILD_EXAMPLES=ON  -D BUILD_SHARED=OFF  -D OPENCV_DIR="D:\SDKS\opencv-3.4.5"  
 ```
 
 ### Release
 ```bash
-cmake -G "Visual Studio 15 2017" -A Win32 -D CMAKE_BUILD_TYPE=Release .. 指定参数
+cmake 
+-G  "Visual Studio 15 2017" -A x64 -D CMAKE_BUILD_TYPE=Release -D JADE_BUILD_EXAMPLES=ON  -D BUILD_SHARED=OFF -D OPENCV_DIR="D:\SDKS\opencv-cuda-4.11.2" -D CUDA_DIR="C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v11.8"  
 ```
 
 > 存在breakpad这个库Release模式的dll不能给examplesDebug模式下使用
@@ -62,36 +64,33 @@ cmake -D CMAKE_BUILD_TYPE=Debug .. 指定参数
 cmake -D CMAKE_BUILD_TYPE=Release .. 指定参数
 ```
 
-
-
-
-
 ## Windows 动态库生成(dll)
 
 ### 指定参数
-
-### 安装 32位 Release
-
-```bash
-"C:\Program Files (x86)\Microsoft Visual Studio\2017\Community\VC\Auxiliary\Build\vcvars32.bat"
-mkdir build_x86 && cd build_x86 
-cmake -G "Visual Studio 15 2017" -A Win32 .. -D CMAKE_BUILD_TYPE=Release -D CMAKE_INSTALL_PREFIX="D:\SDKS\jade_tools" -D BREAKPAD_DIR="D:\SDKS\breakpad"  -D SPDLOG_DIR="D:\SDKS\spdlog" -D SQLITE3_DIR="D:\SDKS\sqlite3"  -D OPENSSL_DIR="D:\SDKS\openssl" -D OPENCV_DIR="D:\SDKS\opencv"
-cmake --build . --config Release --target install 
-```
 
 ## 安装 32 位 Debug
 ```bash
 "C:\Program Files (x86)\Microsoft Visual Studio\2017\Community\VC\Auxiliary\Build\vcvars32.bat"
 mkdir build_x86 && cd build_x86 
-cmake -G "Visual Studio 15 2017" -A Win32 .. -D CMAKE_BUILD_TYPE=Debug -D CMAKE_INSTALL_PREFIX="D:\SDKS\jade_tools" -D BREAKPAD_DIR="D:\SDKS\breakpad"  -D SPDLOG_DIR="D:\SDKS\spdlog" -D SQLITE3_DIR="D:\SDKS\sqlite3"  -D OPENSSL_DIR="D:\SDKS\openssl" -D OPENCV_DIR="D:\SDKS\opencv"
+cmake -G "Visual Studio 15 2017" -A Win32 .. -D CMAKE_BUILD_TYPE=Debug -D CMAKE_INSTALL_PREFIX="D:\SDKS\jade_tools" -D OPENCV_DIR="D:\SDKS\opencv-3.4.5" 
 cmake --build . --config Debug --target install 
 ```
+
+### 安装 32位 Release
+```bash
+"C:\Program Files (x86)\Microsoft Visual Studio\2017\Community\VC\Auxiliary\Build\vcvars32.bat"
+mkdir build_x86 && cd build_x86 
+cmake -G "Visual Studio 15 2017" -A Win32 .. -D CMAKE_BUILD_TYPE=Release -D CMAKE_INSTALL_PREFIX="D:\SDKS\jade_tools" -D OPENCV_DIR="D:\SDKS\opencv-3.4.5"  
+cmake --build . --config Release --target install 
+```
+
+
 ### 安装 64位 Release
 
 ```bash
 "C:\Program Files (x86)\Microsoft Visual Studio\2017\Community\VC\Auxiliary\Build\vcvars64.bat"
 mkdir build_x64 && cd build_x64
-cmake -G "Visual Studio 15 2017" -A x64  ..  -D CMAKE_INSTALL_PREFIX="D:\SDKS\jade_tools-x64" -D BREAKPAD_DIR="D:\SDKS\breakpad-x64"  -D SPDLOG_DIR="D:\SDKS\spdlog-x64" -D SQLITE3_DIR="D:\SDKS\sqlite3-x64"  -D OPENSSL_DIR="D:\SDKS\openssl-x64" -D CUDA_DIR="C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v11.8"
+cmake -G "Visual Studio 15 2017" -A x64 .. -D CMAKE_BUILD_TYPE=Release -D CMAKE_INSTALL_PREFIX="D:\SDKS\jade_tools" -D OPENCV_DIR="D:\SDKS\opencv-cuda-4.11.2" -D CUDA_DIR="C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v11.8"   指定参数
 cmake --build . --config Release --target install 
 ```
 > 编译NVML,只能是64位
@@ -104,7 +103,6 @@ cmake --build . --config Release --target install
 ```bash
 docker run  --name devel -v ${PWD}:/app -it -w /app jadehh/jade-tools:1.0.3-devel-ubuntu24.04 
 ```
-
 
 ### 指定参数
 ```text
@@ -127,7 +125,7 @@ make -j$(nproc) && make install
 
 ## 环境变量设置
 ```bash
-Path=D:\SDKS\sqlite3\x86\bin\;D:\SDKS\openssl\x86\bin\;D:\SDKS\opencv\x86\x86\vc15\bin
+Path=D:\SDKS\vcpkg\installed\x86-windows\debug\bin\;D:\SDKS\jade_tools\x86-windows\debug\bin\;D:\SDKS\opencv-3.4.5\x86\x86\vc15\bin
 ```
 
 

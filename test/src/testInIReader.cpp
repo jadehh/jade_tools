@@ -6,8 +6,6 @@
 # @Software : Samples
 # @Desc     : testInIReader.cpp
 */
-
-#include "include/jade_tools.h"
 #include "test/include/testINIReader.h"
 #include <sstream>
 
