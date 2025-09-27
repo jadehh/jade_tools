@@ -62,13 +62,13 @@ JadeCryptoUtil::CryptoResult JadeCryptoUtil::decryptFileToMemory(const std::stri
                                                                  std::vector<unsigned char>& outputData) const
 {
 #ifdef OPENSSL_ENABLED
-    return crypto_util_impl_->crypto->decryptFileToMemory(inputFile, outputData);
+    return crypto_util_impl_->crypto->decryptFileToMemory(inputFile);
 #else
     return CryptoResult{};
 #endif
 }
 
-JadeCryptoUtil::CryptoResult JadeCryptoUtil::encryptDataToMemory(const std::vector<unsigned char>& inputData,
+[[maybe_unused]] JadeCryptoUtil::CryptoResult JadeCryptoUtil::encryptDataToMemory(const std::vector<unsigned char>& inputData,
                                                                  std::vector<unsigned char>& outputData) const
 {
 #ifdef OPENSSL_ENABLED

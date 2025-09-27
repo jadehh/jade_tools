@@ -16,22 +16,22 @@ void ConsoleColor::reset()
     std::cout << "\033[0m";
 }
 
-void ConsoleColor::bold()
+[[maybe_unused]] void ConsoleColor::bold()
 {
     std::cout << "\033[1m";
 }
 
-void ConsoleColor::italic()
+[[maybe_unused]] void ConsoleColor::italic()
 {
     std::cout << "\033[3m";
 }
 
-void ConsoleColor::reverse()
+[[maybe_unused]] void ConsoleColor::reverse()
 {
     std::cout << "\033[7m";
 }
 
-void ConsoleColor::setBackgroundColor(const int rgb[3])
+[[maybe_unused]] void ConsoleColor::setBackgroundColor(const int rgb[3])
 {
     std::cout << "\033[48;2;" << rgb[0] << ";" << rgb[1] << ";" << rgb[2] << "m";
 }
@@ -41,7 +41,7 @@ void ConsoleColor::setForegroundColor(const int rgb[3])
     std::cout << "\033[38;2;" << rgb[0] << ";" << rgb[1] << ";" << rgb[2] << "m";
 }
 
-void ConsoleColor::setBackgroundColor(int r, int g, int b)
+[[maybe_unused]] void ConsoleColor::setBackgroundColor(int r, int g, int b)
 {
     std::cout << "\033[48;2;" << r << ";" << g << ";" << b << "m";
 }
@@ -51,13 +51,12 @@ void ConsoleColor::setForegroundColor(int r, int g, int b)
     std::cout << "\033[38;2;" << r << ";" << g << ";" << b << "m";
 }
 
-std::string ConsoleColor::getForegroundColor(const int rgb[3])
-{
+[[maybe_unused]] std::string ConsoleColor::getForegroundColor() {
     return "\033[1;31m";
 }
 
 
-void ConsoleColor::underline()
+[[maybe_unused]] void ConsoleColor::underline()
 {
     std::cout << "\033[4m";
 }

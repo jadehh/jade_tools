@@ -38,29 +38,23 @@ public:
     std::map<std::string, std::string> _values;
     std::set<std::string> _sections;
     int _error;
-    static std::string MakeKey(const std::string& section, const std::string& name);
-    static int ValueHandler(void* user, const char* section, const char* name, const char* value);
+    static std::string MakeKey(const std::string& section, const std::string& name){
+        std::string key = section + "=" + name;
+        // Convert to lower case to make section/name lookups case-insensitive
+        std::transform(key.begin(), key.end(), key.begin(), ::tolower);
+        return key;
+    }
+    static int ValueHandler(void* user, const char* section, const char* name, const char* value){
+        const auto impl = static_cast<Impl*>(user);
+        const std::string key = MakeKey(section, name);
+        auto values = impl->_values;
+        if (!impl->_values[key].empty())
+            impl->_values[key] += "\n";
+        impl->_values[key] += value;
+        impl->_sections.insert(section);
+        return 1;
+    }
 };
-
-inline std::string INIReader::Impl::MakeKey(const std::string& section, const std::string& name)
-{
-    std::string key = section + "=" + name;
-    // Convert to lower case to make section/name lookups case-insensitive
-    std::transform(key.begin(), key.end(), key.begin(), ::tolower);
-    return key;
-}
-
-inline int INIReader::Impl::ValueHandler(void* user, const char* section, const char* name, const char* value)
-{
-    const auto impl = static_cast<Impl*>(user);
-    const std::string key = MakeKey(section, name);
-    auto values = impl->_values;
-    if (!impl->_values[key].empty())
-        impl->_values[key] += "\n";
-    impl->_values[key] += value;
-    impl->_sections.insert(section);
-    return 1;
-}
 
 INIReader::INIReader():
     impl_(new Impl())
@@ -94,7 +88,7 @@ std::string INIReader::Get(const std::string& section,
     const std::string key = Impl::MakeKey(section, name);
     if (! impl_->_values.count(key) && !default_value.empty())
     {
-        LOG_INIREADER_WARN(section, name, default_value);
+        LOG_INIREADER_WARN(section, name, default_value)
     }
     return impl_->_values.count(key) ? impl_->_values[key] : default_value;
 }
@@ -110,7 +104,7 @@ long INIReader::GetInteger(const std::string& section,
     const long n = strtol(value, &end, 0);
     if (end <= value)
     {
-        LOG_INIREADER_WARN(section, name, default_value);
+        LOG_INIREADER_WARN(section, name, default_value)
     }
     return end > value ? n : default_value;
 }
@@ -125,7 +119,7 @@ double INIReader::GetReal(const std::string& section,
     const double n = strtod(value, &end);
     if (end <= value)
     {
-        LOG_INIREADER_WARN(section, name, default_value);
+        LOG_INIREADER_WARN(section, name, default_value)
     }
     return end > value ? n : default_value;
 }
@@ -140,7 +134,7 @@ float INIReader::GetFloat(const std::string& section,
     const float n = strtof(value, &end);
     if (end <= value)
     {
-        LOG_INIREADER_WARN(section, name, default_value);
+        LOG_INIREADER_WARN(section, name, default_value)
     }
     return end > value ? n : default_value;
 }
@@ -157,6 +151,6 @@ bool INIReader::GetBoolean(const std::string& section,
     if (valStr == "false" || valStr == "no" || valStr == "off" ||
         valStr == "0")
         return false;
-    LOG_INIREADER_WARN(section, name, default_value);
+    LOG_INIREADER_WARN(section, name, default_value)
     return default_value;
 }

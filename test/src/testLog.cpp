@@ -41,5 +41,6 @@ void testLog()
     std::this_thread::sleep_for(std::chrono::milliseconds(100));
     t1.join();
     LOG_INFO() << "=====================================LOG日志测试结束" << "=====================================";
-    // LOG_CRITICAL(-200) << "LogTrace" << "拼接";
+    LOG_CRITICAL(0) << "LogTrace" << "拼接";
+    DLL_LOG_EXCEPTION("Module",0,"exception") << "DLL LOG EXCEPTION";
 }

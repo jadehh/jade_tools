@@ -77,7 +77,7 @@ public:
     }
 
 private:
-    static void OpencvLog(const cv::utils::logging::LogLevel level, const char* message)
+    [[maybe_unused]] static void OpencvLog(const cv::utils::logging::LogLevel level, const char* message)
     {
         switch (level)
         {

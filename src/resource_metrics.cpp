@@ -11,10 +11,7 @@
 
 #include "include/jade_tools.h"
 #if defined(_WIN32)
-#define NOMINMAX
-#include <Windows.h>
 #include <psapi.h>
-#include <iomanip>
 #elif defined(__linux__)
 #include <sys/resource.h>
 #include <cstring>

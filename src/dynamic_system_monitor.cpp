@@ -14,7 +14,7 @@ std::deque<jade::SystemMonitorImpl::ResourceMetrics> DynamicSystemMonitor::getHi
     return snapshots_;
 }
 
-jade::SystemMonitorImpl::ResourceMetrics DynamicSystemMonitor::getLatestSnapshot() const
+[[maybe_unused]] jade::SystemMonitorImpl::ResourceMetrics DynamicSystemMonitor::getLatestSnapshot() const
 {
     std::lock_guard lock(data_mutex_);
     if (snapshots_.empty())

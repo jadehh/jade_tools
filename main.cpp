@@ -35,6 +35,7 @@ int main(const int argc, char* argv[])
     testInIReader();
     jade::toHexString(1);
     std::string seqNumber = jade::getSeqNumber();
+    unsigned  int threadCount = jade::getThreadCount();
     // jade::CrashHandler::getInstance().triggerTestCrash();
     // // 主线程工作...
     // std::this_thread::sleep_for(std::chrono::milliseconds(13300));

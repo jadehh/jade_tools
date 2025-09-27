@@ -271,9 +271,7 @@ jade::JadeCryptoUtil::CryptoResult CryptoUtil::decryptData(
     return processData(inputData, outputData, false);
 }
 
-jade::JadeCryptoUtil::CryptoResult CryptoUtil::decryptFileToMemory(
-    const std::string& inputFile,
-    std::vector<unsigned char>& outputData) const
+jade::JadeCryptoUtil::CryptoResult CryptoUtil::decryptFileToMemory(const std::string& inputFile) const
 {
     return processFile(inputFile, "", false); // 修改为使用processFile
 }

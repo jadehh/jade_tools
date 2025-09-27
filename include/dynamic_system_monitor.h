@@ -28,8 +28,8 @@ public:
 
     struct StepMetrics
     {
-        std::chrono::time_point<std::chrono::high_resolution_clock> startTime;
-        std::chrono::milliseconds duration{0};
+        [[maybe_unused]] std::chrono::time_point<std::chrono::high_resolution_clock> startTime;
+        [[maybe_unused]] std::chrono::milliseconds duration{0};
         std::vector<jade::SystemMonitorImpl::ResourceMetrics> metricsList;
     };
 
@@ -43,7 +43,7 @@ public:
     // 停止监控线程
     void stop();
     // 获取当前最新快照
-    jade::SystemMonitorImpl::ResourceMetrics getLatestSnapshot() const;
+    [[maybe_unused]] jade::SystemMonitorImpl::ResourceMetrics getLatestSnapshot() const;
     // 获取历史数据（线程安全）
     std::deque<jade::SystemMonitorImpl::ResourceMetrics> getHistory() const;
     // 注册回调函数

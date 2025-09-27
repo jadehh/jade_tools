@@ -18,6 +18,7 @@
 #include <set>
 #include <variant>
 #include <vector>
+#include <bitset>
 #ifdef _WIN32
 #include <windows.h>
 #define SqliteInt64 int64_t
@@ -33,13 +34,12 @@
 #if defined(__GNUC__) && (__GNUC__ >= 7) && (__GNUC__ < 8)
 #define LOW_GCC 1
 #else
-#define LOG_GCC 0
 #endif
 
 #if defined(__has_include)
 #  if __has_include(<opencv2/opencv.hpp>)  // 标准化的头文件存在性检查
-#    include <opencv2/opencv.hpp>
-#    define OPENCV_ENABLED 1
+#  include <opencv2/opencv.hpp>
+#define OPENCV_ENABLED 1
 #if defined(__has_include)
 #if __has_include(<opencv2/cudacodec.hpp>) // 标准化的头文件存在性检查
 #include <opencv2/cudacodec.hpp>
@@ -61,7 +61,7 @@ namespace jade
 {
      struct JADE_API jade_time : tm
     {
-        int tm_millis;
+        [[maybe_unused]] int tm_millis;
     };
 
 
@@ -77,7 +77,7 @@ namespace jade
      * @param ip
      * @return
      */
-    JADE_API uint32_t getIpAsInt(const std::string& ip) ;
+    [[maybe_unused]] JADE_API uint32_t getIpAsInt(const std::string& ip) ;
 
 
     /**
@@ -85,19 +85,19 @@ namespace jade
      * @param ip
      * @return
      */
-    JADE_API  std::string  getIntAsIp(uint32_t ip);
+    [[maybe_unused]] [[maybe_unused]] JADE_API  std::string  getIntAsIp(uint32_t ip);
     /**
      * 通过Socket获取本机ip地址
      * @param ip
      * @return
      */
-    JADE_API  std::string getLocalIP(const std::string& ip);
+    [[maybe_unused]] JADE_API  std::string getLocalIP(const std::string& ip);
 
     /**
      * 获取版本
      * @return
      */
-    JADE_API  std::string getVersion();
+    [[maybe_unused]] JADE_API  std::string getVersion();
     /**
     * 打印水平居中表格
     * @param headers  表头
@@ -141,7 +141,7 @@ namespace jade
      * @param code
      * @return
      */
-    JADE_API std::string toHexString(unsigned int code);
+    [[maybe_unused]] JADE_API std::string toHexString(unsigned int code);
 
 #ifdef _WIN32
     /**
@@ -149,14 +149,14 @@ namespace jade
      * @param code
      * @return
      */
-    JADE_API std::string toHexString(DWORD code);
+    [[maybe_unused]] JADE_API std::string toHexString(DWORD code);
 
     /**
     * 将字节转换为易读格式
     * @param bytes
     * @return
     */
-    JADE_API std::string formatBytes(SIZE_T bytes);
+    [[maybe_unused]] JADE_API std::string formatBytes(SIZE_T bytes);
     /**
      *
      * @param bytes
@@ -168,13 +168,13 @@ namespace jade
     JADE_API bool isImageFile(const std::string& path);
     // 保留2位小数点
     JADE_API std::string formatValue(const double& value, int precision = 2, bool fixed = true);
-    JADE_API std::string formatValue(const int& value, int precision = 2, bool fixed = true);
+    [[maybe_unused]] JADE_API std::string formatValue(const int& value, int precision = 2, bool fixed = true);
 
     /**
      * 获取操作系统名称
      * @reutrn   名称
      */
-    JADE_API std::string getOperatingSystemName();
+    [[maybe_unused]] JADE_API std::string getOperatingSystemName();
     /**
      * 时间相关
      * @return
@@ -191,6 +191,8 @@ namespace jade
      */
     JADE_API std::string getSeqNumber();
 
+    JADE_API unsigned int getThreadCount();
+
     /**
      * ####################ConsoleColor###########################
      **/
@@ -201,14 +203,14 @@ namespace jade
         struct Colors
         {
             static constexpr int RED[3] = {255, 0, 0};
-            static constexpr int GREEN[3] = {0, 255, 0};
+            [[maybe_unused]] static constexpr int GREEN[3] = {0, 255, 0};
             static constexpr int BLUE[3] = {0, 0, 255};
             static constexpr int YELLOW[3] = {255, 255, 0};
-            static constexpr int MAGENTA[3] = {255, 0, 255};
-            static constexpr int CYAN[3] = {0, 255, 255};
-            static constexpr int WHITE[3] = {255, 255, 255};
+            [[maybe_unused]] static constexpr int MAGENTA[3] = {255, 0, 255};
+            [[maybe_unused]] static constexpr int CYAN[3] = {0, 255, 255};
+            [[maybe_unused]] static constexpr int WHITE[3] = {255, 255, 255};
             static constexpr int BLACK[3] = {0, 0, 0};
-            static constexpr int ORANGE[3] = {255, 165, 0};
+            [[maybe_unused]] static constexpr int ORANGE[3] = {255, 165, 0};
             static constexpr int PURPLE[3] = {128, 0, 128};
         };
 
@@ -216,21 +218,21 @@ namespace jade
         static void reset();
         // 前景色（文本颜色）
         static void setForegroundColor(const int rgb[3]);
-        static std::string getForegroundColor(const int rgb[3]);
+        [[maybe_unused]] static std::string getForegroundColor();
 
         // 背景色
-        static void setBackgroundColor(const int rgb[3]);
+        [[maybe_unused]] static void setBackgroundColor(const int rgb[3]);
         // 前景色（文本颜色）
         static void setForegroundColor(int r, int g, int b);
         // 背景色
-        static void setBackgroundColor(int r, int g, int b);
+        [[maybe_unused]] static void setBackgroundColor(int r, int g, int b);
 
 
         // 文本样式
-        static void bold(); // 粗体
-        static void italic(); // 斜体
-        static void underline(); // 下划线
-        static void reverse(); // 反色（交换前景和背景）
+        [[maybe_unused]] static void bold(); // 粗体
+        [[maybe_unused]] static void italic(); // 斜体
+        [[maybe_unused]] static void underline(); // 下划线
+        [[maybe_unused]] static void reverse(); // 反色（交换前景和背景）
     };
 
     /**
@@ -276,11 +278,11 @@ namespace jade
         void exception(const std::string& message, const std::string& e, int exitCode, const char* file = "", int line = 0) const;
 
         // 设置日志级别
-        void setLevel(Level level) const;
+        [[maybe_unused]] void setLevel(Level level) const;
         // 关闭日志
         void shutDown() ;
         // 设置DLLName
-        static void setDllName(const std::string& dllName);
+        [[maybe_unused]] static void setDllName(const std::string& dllName);
 
     private:
         class SpdLoggerIMPL;
@@ -297,7 +299,7 @@ namespace jade
     {
     public:
         // 获取单例实例
-        static Utils& GetInstance()
+        [[maybe_unused]] static Utils& GetInstance()
         {
             static Utils instance;
             return instance;
@@ -323,16 +325,9 @@ namespace jade
         LoggerStream& operator<<(bool value);
         LoggerStream& operator<<(long value);
         LoggerStream& operator<<(unsigned int value);
+        LoggerStream& operator<<(std::bitset<16> value);
 
         [[nodiscard]] Impl* getImpl() const;
-
-        void setStream(const char* value) const;
-        void setStream(const std::string& value) const;
-        void setStream(int value) const;
-        void setStream(double value) const;
-        void setStream(float value) const;
-        void setStream(long value) const;
-        void setStream(unsigned value) const;
 
 
     private:
@@ -354,37 +349,37 @@ namespace jade
     {
     public:
         // 获取单例实例
-        static FileTools& GetInstance()
+        [[maybe_unused]] static FileTools& GetInstance()
         {
             static FileTools instance;
             return instance;
         }
 
         // 创建单层目录（父目录必须存在）
-        static bool createDirectory(const std::string& path);
+        [[maybe_unused]] static bool createDirectory(const std::string& path);
 
         // 递归创建多级目录（自动创建父目录）
         static bool createDirectories(const std::string& path);
 
         // 检查路径是否存在且是目录
-        static bool isExists(const std::string& path);
+        [[maybe_unused]] static bool isExists(const std::string& path);
 
         // 获取最后一次错误信息
-        static std::string getLastError();
+        [[maybe_unused]] static std::string getLastError();
 
         // 删除目录（可选功能）
-        static bool remove(const std::string& path);
+        [[maybe_unused]] static bool remove(const std::string& path);
 
         //处理不同操作系统下的路径分隔符差异，确保路径字符串在不同平台上都能正确工作
         static std::string fixPath(const std::string& path);
 
 
         // 获取文件夹下所有的图片文件
-        static std::vector<std::string> getImageFiles(const std::string& path, bool fullPath = true);
+        [[maybe_unused]] static std::vector<std::string> getImageFiles(const std::string& path, bool fullPath = true);
 
         // 写入二进制文件
-        static bool writeBinaryToFile(const std::string& path, const float* data, int size);
-        static bool writeBinaryToFile(const std::string& path, const char* data, int size);
+        [[maybe_unused]] static bool writeBinaryToFile(const std::string& path, const float* data, int size);
+        [[maybe_unused]] static bool writeBinaryToFile(const std::string& path, const char* data, int size);
         // 禁止拷贝和赋值
         FileTools(const FileTools&) = delete;
         FileTools& operator=(const FileTools&) = delete;
@@ -445,7 +440,7 @@ namespace jade
         static std::vector<SystemMonitorImpl::ResourceMetrics> extractMiddleElements(
             const std::vector<SystemMonitorImpl::ResourceMetrics>& arr);
         // 输出统计报告
-        void printTable() const;
+        [[maybe_unused]] void printTable() const;
         [[nodiscard]] std::string getTable() const;
         // 重置所有监控数据
         void reset() const;
@@ -482,7 +477,7 @@ namespace jade
         void setKey(const std::vector<unsigned char>& key) const;
         void setIV(const std::vector<unsigned char>& iv) const;
         // 加密接口
-        CryptoResult encryptDataToMemory(const std::vector<unsigned char>& inputData,
+        [[maybe_unused]] CryptoResult encryptDataToMemory(const std::vector<unsigned char>& inputData,
                                          std::vector<unsigned char>& outputData) const;
         CryptoResult encryptFileToMemory(const std::string& inputFile, std::vector<unsigned char>& outputData) const;
         [[nodiscard]] CryptoResult encryptFileToFile(const std::string& inputFile, const std::string& outputFile) const;
@@ -566,9 +561,9 @@ namespace jade
         void shutDown();
         // 添加自定义信息
         void setCustomInfo(const std::string& key, const std::string& value) const;
-        void clearCustomInfo() const;
+        [[maybe_unused]] [[maybe_unused]] void clearCustomInfo() const;
         // 触发测试崩溃（仅用于调试）
-        void triggerTestCrash() const;
+        [[maybe_unused]] [[maybe_unused]] void triggerTestCrash() const;
 
     private:
         CrashHandler();
@@ -591,7 +586,7 @@ namespace jade
 
         // Construct INIReader and parse given file. See ini.h for more info
         // about the parsing.
-        explicit INIReader(FILE* file);
+        [[maybe_unused]] [[maybe_unused]] explicit INIReader(FILE* file);
 
         // Return the result of ini_parse(), i.e., 0 on success, line number of
         // first error on parse error, or -1 on file open error.
@@ -610,18 +605,17 @@ namespace jade
 
         // Get a real (floating point double) value from INI file, returning
         // default_value if not found or not a valid floating point value
-        // according to strtod().
+        // according to str to d().
         [[nodiscard]] double GetReal(const std::string& section, const std::string& name, double default_value) const;
 
         // Get a single precision floating point number value from INI file, returning
         // default_value if not found or not a valid floating point value
-        // according to strtof().
-        [[nodiscard]] float GetFloat(const std::string& section, const std::string& name, float default_value) const;
+        // according to str to f().
+        [[maybe_unused]] [[nodiscard]] float GetFloat(const std::string& section, const std::string& name, float default_value) const;
 
         // Get a boolean value from INI file, returning default_value if not found or
         // if not a valid true/false value. Valid true values are "true", "yes", "on",
-        // "1", and valid false values are "false", "no", "off", "0" (not case
-        // sensitive).
+        // "1", and valid false values are "false", "no", "off", "0" (not case-sensitive).
         [[nodiscard]] bool GetBoolean(const std::string& section, const std::string& name, bool default_value) const;
 
     protected:
@@ -757,16 +751,16 @@ namespace jade
             // 根据设备类型获取默认流路径
             [[nodiscard]] std::string getDefaultStreamPath() const;
             // 获取设备类型字符串
-            [[nodiscard]] std::string getDeviceTypeString() const;
+            [[maybe_unused]] [[nodiscard]] std::string getDeviceTypeString() const;
             // 设置设备类型（支持从字符串设置）
-            void setDeviceTypeFromString(const std::string& type_str) const;
-            bool getUseGpu() const;
+            [[maybe_unused]] void setDeviceTypeFromString(const std::string& type_str) const;
+            [[nodiscard]] bool getUseGpu() const;
             [[nodiscard]] std::string getIpAddress() const;
-            int getFrameInterval() const;
-            std::string getUserName() const;
-            std::string getCameraName() const;
+            [[nodiscard]] int getFrameInterval() const;
+            [[nodiscard]] std::string getUserName() const;
+            [[nodiscard]] std::string getCameraName() const;
             // 检查连接信息是否有效
-            [[nodiscard]] bool isValid() const;
+            [[maybe_unused]] [[maybe_unused]] [[nodiscard]] bool isValid() const;
             // 清空所有信息
             void clear() const;
         private:
@@ -870,4 +864,4 @@ namespace jade
 
 
 #define LOG_EXCEPTION(exitCode,ex) jade::LoggerStream(jade::Logger::Level::S_EXCEPTION,__FILE__,__LINE__,exitCode,ex)
-#define DLL_EXCEPTION(module,exitCode,ex) jade::DLLLoggerStream(jade::Logger::Level::S_EXCEPTION, __FILE__, __LINE__,module,exitCode,ex)
+#define DLL_LOG_EXCEPTION(module,exitCode,ex) jade::DLLLoggerStream(jade::Logger::Level::S_EXCEPTION, __FILE__, __LINE__,module,exitCode,ex)

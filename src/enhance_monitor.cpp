@@ -6,23 +6,16 @@
 # @Software : Samples
 # @Desc     : enhance_monitor.cpp
 */
-//
 
-#ifdef _WIN32
-#define NOMINMAX
-#define WIN32_LEAN_AND_MEAN
-#endif
-#include "include/jade_tools.h"
-#include "include/dynamic_system_monitor.h"
+#include <algorithm>
 #include <atomic>
 #include <chrono>
 #include <deque>
 #include <functional>
 #include <iostream>
-#include <mutex>
-#include <thread>
-#include <algorithm>
-
+#include "include/dynamic_system_monitor.h"
+#include "include/jade_tools.h"
+#define MODULE_NAME "EnhancedTimeProfiler"
 namespace jade
 {
     class DynamicSystemMonitorImpl
@@ -30,56 +23,46 @@ namespace jade
     public:
         DynamicSystemMonitorImpl() = default;
 
-        ~DynamicSystemMonitorImpl()
-        {
-            monitor.reset();
-        };
+        ~DynamicSystemMonitorImpl() { monitor.reset(); };
         std::unique_ptr<DynamicSystemMonitor> monitor;
     };
-}
+} // namespace jade
 
 using namespace jade;
 
-EnhancedTimeProfiler::EnhancedTimeProfiler():
-    dynamic_system_monitor_impl_(new DynamicSystemMonitorImpl())
-{
-}
+EnhancedTimeProfiler::EnhancedTimeProfiler() : dynamic_system_monitor_impl_(new DynamicSystemMonitorImpl()) {}
 
-EnhancedTimeProfiler::~EnhancedTimeProfiler()
-{
-    delete dynamic_system_monitor_impl_;
-}
+EnhancedTimeProfiler::~EnhancedTimeProfiler() { delete dynamic_system_monitor_impl_; }
 
 
 void EnhancedTimeProfiler::startStep(const std::string& stepName, const int interval_ms) const
 {
     dynamic_system_monitor_impl_->monitor->start(stepName, interval_ms);
-    dynamic_system_monitor_impl_->monitor->setUpdateCallback([](const auto& snapshot)
-    {
-        // std::cout << "Cpu use:" << snapshot.cpuUsage << " ,Mem:" << snapshot.memoryUsage
-        // << " ,readSpeed:" << snapshot.readSpeed << " ,writeSpeed:" << snapshot.writeSpeed
-        // << " ,GPU use:" << snapshot.gpuUsage << " ,GPU Mem:" << snapshot.gpuMemory  << std::endl;
-    });
+    dynamic_system_monitor_impl_->monitor->setUpdateCallback(
+        [](const auto& snapshot)
+        {
+            DLL_LOG_TRACE(MODULE_NAME) << "Cpu use:" << snapshot.cpuUsage << " ,Mem:" << snapshot.memoryUsage
+                                       << " ,readSpeed:" << snapshot.readSpeed << " ,writeSpeed:" << snapshot.writeSpeed
+                                       << " ,GPU use:" << snapshot.gpuUsage << " ,GPU Mem:" << snapshot.gpuMemory;
+        });
 }
 
 void EnhancedTimeProfiler::endStep(const std::string& stepName, const int count)
 {
-    // std::cout << "end Step" << std::endl;
-    // std::cout << "count:" << count << "history size:"<< dynamicSystemMonitor->getHistory().size() << std::endl;
+    DLL_LOG_TRACE(MODULE_NAME) << "结束,总数量:" << count << "历史大小:" << dynamic_system_monitor_impl_->monitor->getHistory().size();
     count_ = count;
     auto& steps = dynamic_system_monitor_impl_->monitor->stepData[stepName];
     if (steps.empty())
         return;
-    auto& [startTime, duration,metrics] = steps.back();
+    auto& [startTime, duration, metrics] = steps.back();
     const auto endTime = std::chrono::high_resolution_clock::now();
     duration = std::chrono::duration_cast<std::chrono::milliseconds>(endTime - startTime);
-    metrics.assign(dynamic_system_monitor_impl_->monitor->getHistory().begin(),
-                   dynamic_system_monitor_impl_->monitor->getHistory().end());
+    metrics.assign(dynamic_system_monitor_impl_->monitor->getHistory().begin(), dynamic_system_monitor_impl_->monitor->getHistory().end());
     dynamic_system_monitor_impl_->monitor->stop();
 }
 
-std::vector<SystemMonitorImpl::ResourceMetrics> EnhancedTimeProfiler::extractMiddleElements(
-    const std::vector<SystemMonitorImpl::ResourceMetrics>& arr)
+std::vector<SystemMonitorImpl::ResourceMetrics>
+EnhancedTimeProfiler::extractMiddleElements(const std::vector<SystemMonitorImpl::ResourceMetrics>& arr)
 {
     const int n = static_cast<int>(arr.size());
     // 处理空数组情况
@@ -91,10 +74,7 @@ std::vector<SystemMonitorImpl::ResourceMetrics> EnhancedTimeProfiler::extractMid
     const int start_index = (n - x) / 2;
 
     // 注意：原始数组是原生数组，我们可以用指针作为迭代器
-    return {
-        arr.begin() + start_index,
-        arr.begin() + start_index + x
-    };
+    return {arr.begin() + start_index, arr.begin() + start_index + x};
 }
 
 std::vector<std::vector<std::string>> EnhancedTimeProfiler::getDatas() const
@@ -114,12 +94,11 @@ std::vector<std::vector<std::string>> EnhancedTimeProfiler::getDatas() const
         double totalSpeedWrites = 0;
         double totalGPU = 0;
         double totalGPUMem = 0;
-        for (const auto& [startTime, duration,metrics] : metricsList)
+        for (const auto& [startTime, duration, metrics] : metricsList)
         {
             totalTime += static_cast<double>(duration.count());
             std::vector<SystemMonitorImpl::ResourceMetrics> extractMetrics = extractMiddleElements(metrics);
-            for (const auto& [cpuUsage, memoryUsage, diskReads, diskWrites,readSpeed,writeSpeed, gpuUsage, gpuMemory] :
-                 extractMetrics)
+            for (const auto& [cpuUsage, memoryUsage, diskReads, diskWrites, readSpeed, writeSpeed, gpuUsage, gpuMemory] : extractMetrics)
             {
                 totalCPU += cpuUsage;
                 totalMem += memoryUsage;
@@ -145,58 +124,50 @@ std::vector<std::vector<std::string>> EnhancedTimeProfiler::getDatas() const
         }
 
         const int count = static_cast<int>(metricsList.size());
-        std::vector data = {
-            name, formatValue(count * count_ / 1.0), formatValue(totalTime / 1000.0, 3),
-            formatValue(totalTime / (count * count_), 1),
-            formatValue(totalCPU / count), formatValue(totalMem / count), formatValue(totalSpeedReads / count),
-            formatValue(totalSpeedWrites / count), formatValue(totalGPU / count), formatValue(totalGPUMem / count)
-        };
+        std::vector data = {name,
+                            formatValue(count * count_ / 1.0),
+                            formatValue(totalTime / 1000.0, 3),
+                            formatValue(totalTime / (count * count_), 1),
+                            formatValue(totalCPU / count),
+                            formatValue(totalMem / count),
+                            formatValue(totalSpeedReads / count),
+                            formatValue(totalSpeedWrites / count),
+                            formatValue(totalGPU / count),
+                            formatValue(totalGPUMem / count)};
         datas.push_back(data);
     }
     return datas;
 }
 
-void EnhancedTimeProfiler::printTable() const
+[[maybe_unused]] void EnhancedTimeProfiler::printTable() const
 {
     printPrettyTable(dynamic_system_monitor_impl_->monitor->headers, getDatas());
 }
 
-std::string EnhancedTimeProfiler::getTable() const
-{
-    return getPrettyTable(dynamic_system_monitor_impl_->monitor->headers, getDatas());
-}
+std::string EnhancedTimeProfiler::getTable() const { return getPrettyTable(dynamic_system_monitor_impl_->monitor->headers, getDatas()); }
 
 
-void EnhancedTimeProfiler::reset() const
-{
-    dynamic_system_monitor_impl_->monitor->stepData.clear();
-}
+void EnhancedTimeProfiler::reset() const { dynamic_system_monitor_impl_->monitor->stepData.clear(); }
 
-void* EnhancedTimeProfilerCreate()
-{
-    return new EnhancedTimeProfiler();
-}
+[[maybe_unused]] void* EnhancedTimeProfilerCreate() { return new EnhancedTimeProfiler(); }
 
-void EnhancedTimeProfilerStart(void* obj, const char* name)
+[[maybe_unused]] void EnhancedTimeProfilerStart(void* obj, const char* name)
 {
     const auto instance = static_cast<EnhancedTimeProfiler*>(obj);
     instance->startStep(name);
 }
 
-void EnhancedTimeProfilerStop(void* obj, const char* name, const int count)
+[[maybe_unused]] void EnhancedTimeProfilerStop(void* obj, const char* name, const int count)
 {
     const auto instance = static_cast<EnhancedTimeProfiler*>(obj);
     instance->endStep(name, count);
 }
 
-const char* EnhancedTimeProfilerResult(void* obj)
+[[maybe_unused]] const char* EnhancedTimeProfilerResult(void* obj)
 {
     const auto instance = static_cast<EnhancedTimeProfiler*>(obj);
     return instance->getTable().c_str();
 }
 
 
-void EnhancedTimeProfilerDestroy(void* obj)
-{
-    delete static_cast<EnhancedTimeProfiler*>(obj);
-}
+[[maybe_unused]] void EnhancedTimeProfilerDestroy(void* obj) { delete static_cast<EnhancedTimeProfiler*>(obj); }

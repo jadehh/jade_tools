@@ -11,6 +11,7 @@
 #include <winsock2.h>
 #include <ws2tcpip.h>
 #pragma comment(lib, "ws2_32.lib")
+#include <tlhelp32.h>
 #else
 #include <sys/socket.h>
 #include <netinet/in.h>
@@ -18,6 +19,7 @@
 #include <arpa/inet.h>
 #include <locale>
 #include <codecvt>
+#include <dirent.h>
 #endif
 #include <iostream>
 #include <iomanip>
@@ -43,13 +45,13 @@ uint32_t jade::getIpAsInt(const char* ip)
 }
 
 
-uint32_t jade::getIpAsInt(const std::string& ip)
+[[maybe_unused]] uint32_t jade::getIpAsInt(const std::string& ip)
 {
     return getIpAsInt(ip.c_str());
 }
 
 
-std::string jade::getIntAsIp(const uint32_t ip)
+[[maybe_unused]] std::string jade::getIntAsIp(const uint32_t ip)
 {
     return (std::to_string((ip >> 24) & 0xFF) + "." +
         std::to_string((ip >> 16) & 0xFF) + "." +
@@ -57,7 +59,7 @@ std::string jade::getIntAsIp(const uint32_t ip)
         std::to_string(ip & 0xFF));
 }
 
-std::string jade::getLocalIP(const std::string& ip)
+[[maybe_unused]] std::string jade::getLocalIP(const std::string& ip)
 {
     // 创建UDP socket
 #ifdef _WIN32
@@ -130,7 +132,7 @@ std::string jade::getLocalIP(const std::string& ip)
     return localIP;
 }
 
-std::string jade::getVersion()
+[[maybe_unused]] std::string jade::getVersion()
 {
     return {"1.0.0"};
 }
@@ -247,7 +249,7 @@ std::string jade::formatValue(const double& value, const int precision, bool fix
 }
 
 
-std::string jade::formatValue(const int& value, int precision, bool fixed)
+[[maybe_unused]] std::string jade::formatValue(const int& value, int precision, bool fixed)
 {
     std::ostringstream oss;
     if (fixed)
@@ -264,7 +266,7 @@ std::string jade::toHexString(const int code)
     return buffer;
 }
 
-std::string jade::toHexString(const unsigned int code)
+[[maybe_unused]] std::string jade::toHexString(const unsigned int code)
 {
     char buffer[11]; // 足够存放"0x" + 8位十六进制数 + 结束符
     snprintf(buffer, sizeof(buffer), "0x%08X", code);
@@ -273,7 +275,7 @@ std::string jade::toHexString(const unsigned int code)
 
 
 #ifdef _WIN32
-std::string jade::formatBytes(const SIZE_T bytes)
+[[maybe_unused]] std::string jade::formatBytes(const SIZE_T bytes)
 {
     const char* suffixes[] = {"B", "KB", "MB", "GB"};
     int suffixIndex = 0;
@@ -294,15 +296,15 @@ double jade::bytesToMB(const SIZE_T bytes)
 }
 
 
-std::string jade::toHexString(const DWORD code)
+[[maybe_unused]] std::string jade::toHexString(const DWORD code)
 {
     char buffer[11]; // 足够存放"0x" + 8位十六进制数 + 结束符
-    snprintf(buffer, sizeof(buffer), "0x%08X", code);
+    snprintf(buffer, sizeof(buffer), "0x%08lX", code);
     return buffer;
 }
 #endif
 
-std::string jade::getOperatingSystemName()
+[[maybe_unused]] std::string jade::getOperatingSystemName()
 {
 #ifdef _WIN32
     return "Windows 32-bit";
@@ -463,4 +465,42 @@ std::string jade::getSeqNumber()
     oss << std::put_time(&time, fmt_arg);
     oss << std::setfill('0') << std::setw(3) << time.tm_millis;
     return oss.str();
+}
+unsigned  int jade::getThreadCount() {
+#ifdef _WIN32
+    // Windows 实现
+    DWORD threadCount = 0;
+    HANDLE hSnapshot = CreateToolhelp32Snapshot(TH32CS_SNAPTHREAD, 0);
+
+    if (hSnapshot != INVALID_HANDLE_VALUE) {
+        THREADENTRY32 te32;
+        te32.dwSize = sizeof(THREADENTRY32);
+
+        DWORD currentProcessId = GetCurrentProcessId();
+        if (Thread32First(hSnapshot, &te32)) {
+            do {
+                if (te32.th32OwnerProcessID == currentProcessId) {
+                    threadCount++;
+                }
+            } while (Thread32Next(hSnapshot, &te32));
+        }
+        CloseHandle(hSnapshot);
+    }
+    return threadCount;
+#else
+    // Linux/macOS 实现
+    unsigned int threadCount = 0;
+    DIR* dir = opendir("/proc/self/task");
+
+    if (dir != nullptr) {
+        struct dirent* entry;
+        while ((entry = readdir(dir)) != nullptr) {
+            if (entry->d_name[0] != '.') {  // 跳过 "." 和 ".."
+                threadCount++;
+            }
+        }
+        closedir(dir);
+    }
+    return threadCount;
+#endif
 }

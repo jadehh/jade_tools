@@ -15,7 +15,7 @@
 class CryptoUtil
 {
 public:
-    explicit CryptoUtil(jade::JadeCryptoUtil::CryptoMode mode = jade::JadeCryptoUtil::CryptoMode::AES_256_CBC);
+    [[maybe_unused]] explicit CryptoUtil(jade::JadeCryptoUtil::CryptoMode mode = jade::JadeCryptoUtil::CryptoMode::AES_256_CBC);
     ~CryptoUtil();
 
     // 设置密钥和IV
@@ -36,16 +36,15 @@ public:
     jade::JadeCryptoUtil::CryptoResult decryptData(const std::vector<unsigned char>& inputData,
                                                    std::vector<unsigned char>& outputData) const;
 
-    jade::JadeCryptoUtil::CryptoResult decryptFileToMemory(const std::string& inputFile,
-                                                           std::vector<unsigned char>& outputData) const;
+    [[nodiscard]] jade::JadeCryptoUtil::CryptoResult decryptFileToMemory(const std::string& inputFile) const;
 
     [[nodiscard]] jade::JadeCryptoUtil::CryptoResult decryptFileToFile(const std::string& inputFile,
                                                                        const std::string& outputFile) const;
 
-    static std::vector<unsigned char> generateRandomIV(jade::JadeCryptoUtil::CryptoMode mode);
+    [[maybe_unused]] static std::vector<unsigned char> generateRandomIV(jade::JadeCryptoUtil::CryptoMode mode);
 
     // 获取当前模式
-    [[nodiscard]] jade::JadeCryptoUtil::CryptoMode getMode() const { return mode_; }
+    [[maybe_unused]] [[nodiscard]] jade::JadeCryptoUtil::CryptoMode getMode() const { return mode_; }
 
 private:
     bool initializeContext();

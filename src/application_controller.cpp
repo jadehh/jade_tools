@@ -1,3 +1,11 @@
+/**
+# @File     : application_controller.cpp
+# @Author   : jade
+# @Date     : 2025/9/3 12:47
+# @Email    : jadehh@1ive.com
+# @Software : Samples
+# @Desc     : application_controller.cpp
+*/
 #include "include/jade_tools.h"
 #include <atomic>
 #include <csignal>
@@ -100,7 +108,7 @@ private:
         }
 
         // 禁用快速编辑模式，确保 Ctrl+C 正常工作
-        if ( HANDLE const hStdin = GetStdHandle(STD_INPUT_HANDLE); hStdin != INVALID_HANDLE_VALUE) {
+        if (HANDLE  hStdin = GetStdHandle(STD_INPUT_HANDLE); hStdin != INVALID_HANDLE_VALUE) {
             DWORD mode = 0;
             if (GetConsoleMode(hStdin, &mode)) {
                 // 禁用快速编辑模式
@@ -110,7 +118,6 @@ private:
                 SetConsoleMode(hStdin, mode);
             }
         }
-
 #endif
     }
 
@@ -201,7 +208,7 @@ private:
     bool exitRequested_ = false;
 
     // 当前实例指针（线程安全）
-    static std::atomic<Impl*> currentInstance_;
+    [[maybe_unused]] static std::atomic<Impl*> currentInstance_;
 };
 
 // 初始化静态成员

@@ -7,7 +7,6 @@
 # @Desc     : video_capture.cpp
 */
 #include "include/jade_tools.h"
-
 #include <condition_variable>
 #include <future>
 using namespace jade;
@@ -30,7 +29,6 @@ private:
     cv::Mat cpu_frame;
 
     int reconnectAttempts_;
-    const int maxReconnectAttempts_;
 
     void open(const VideoCaptureBase* outer,const std::string& source,const bool use_gpu)
     {
@@ -75,7 +73,7 @@ private:
         }
         catch (std::exception& e)
         {
-            DLL_LOG_ERROR(MODULE_NAME) << outer->getVideoInfo() << "使用CPU解码,相机打开异常 失败次数为:" << reconnectAttempts_ << ",异常原因:" << e.what();;
+            DLL_LOG_ERROR(MODULE_NAME) << outer->getVideoInfo() << "使用CPU解码,相机打开异常 失败次数为:" << reconnectAttempts_ << ",异常原因:" << e.what();
         }
     }
 
@@ -190,9 +188,7 @@ private:
 public:
     Impl(std::string source, const bool use_gpu, const int frame_interval) :
         source_(std::move(source)), use_gpu_(use_gpu), frame_interval_(frame_interval),
-        frame_count_(0), isRunning_(false), reconnectAttempts_(0),
-        maxReconnectAttempts_(100)
-    {
+        frame_count_(0), isRunning_(false), reconnectAttempts_(0){
     }
 
 

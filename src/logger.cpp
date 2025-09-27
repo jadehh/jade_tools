@@ -202,7 +202,7 @@ public:
     void setStream(const bool value) { buffer_ << value; }
     void setStream(const long value) { buffer_ << value; }
     void setStream(const unsigned int value) { buffer_ << value; }
-
+    void setStream(std::bitset<16> value) { buffer_ << value; }
 
     void log() const
     {
@@ -314,42 +314,12 @@ LoggerStream& LoggerStream::operator<<(unsigned int value)
     impl_->setStream(value);
     return *this;
 }
-
-
-void LoggerStream::setStream(const char* value) const
+LoggerStream& LoggerStream::operator<<(std::bitset<16> value)
 {
     impl_->setStream(value);
+    return *this;
 }
 
-void LoggerStream::setStream(const int value) const
-{
-    impl_->setStream(value);
-}
-
-void LoggerStream::setStream(const std::string& value) const
-{
-    impl_->setStream(value);
-}
-
-void LoggerStream::setStream(const double value) const
-{
-    impl_->setStream(value);
-}
-
-void LoggerStream::setStream(const float value) const
-{
-    impl_->setStream(value);
-}
-
-void LoggerStream::setStream(const long value) const
-{
-    impl_->setStream(value);
-}
-
-void LoggerStream::setStream(const unsigned value) const
-{
-    impl_->setStream(value);
-}
 
 LoggerStream::~LoggerStream()
 {
@@ -424,7 +394,7 @@ void Logger::init(const std::string& app_name, const std::string& logName, const
 #endif
 }
 
-void Logger::setDllName(const std::string& dllName)
+[[maybe_unused]] void Logger::setDllName(const std::string& dllName)
 {
     CustomFormatter::setDllName(dllName);
 }
@@ -530,7 +500,7 @@ void Logger::log(const Level level, const std::string& message, const char* file
 }
 
 
-void Logger::setLevel(const Level level) const
+[[maybe_unused]] void Logger::setLevel(const Level level) const
 {
 #if SPDLOG_ENABLE
     if (logger_->initialized_ && !logger_->shutdown_)

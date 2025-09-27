@@ -8,7 +8,6 @@
 
 // 平台特定的头文件
 #ifdef _WIN32
-#include <Windows.h>
 #include "client/windows/handler/exception_handler.h"
 #elif __APPLE__
 #include "client/mac/handler/exception_handler.h"
@@ -108,7 +107,7 @@ private:
     std::string dump_path_;
     std::function<void()> func_;
 
-    static std::string removeDmpSuffix(const std::string& filename)
+    [[maybe_unused]] static std::string removeDmpSuffix(const std::string& filename)
     {
         // 查找最后一个点号的位置
 
@@ -169,8 +168,8 @@ private:
         const wchar_t* dump_path,
         const wchar_t* minidump_id,
         void* context,
-        EXCEPTION_POINTERS* ex_info,
-        MDRawAssertionInfo* assertion,
+        [[maybe_unused]] EXCEPTION_POINTERS* ex_info,
+        [[maybe_unused]] MDRawAssertionInfo* assertion,
         const bool succeeded
     ) {
         const auto self = static_cast<Impl*>(context);
@@ -195,28 +194,21 @@ private:
         return self->handleCrash(succeeded, nullptr, nullptr, descriptor.path());
     }
 #endif
-    // 统一的崩溃处理函数
+    // 区分操作系统的处理逻辑
+
+#ifdef _WIN32
     bool handleCrash(const bool succeeded,
                      const wchar_t* dump_path = nullptr,
-                     const wchar_t* minidump_id = nullptr,
-                     const char* linux_path = nullptr) const
+                     const wchar_t* minidump_id = nullptr) const
     {
         if (!succeeded)
         {
             DLL_LOG_ERROR(MODULE_NAME) << "Failed to generate minidump";
             return false;
         }
-        // 获取原始 minidump 文件路径
         std::string original_dump_path;
-#ifdef _WIN32
         const std::wstring wpath = std::wstring(dump_path) + L"\\" + std::wstring(minidump_id) + L".dmp";
         original_dump_path = wstringToString(wpath);
-#elif __APPLE__
-        // macOS 需要特殊处理获取路径
-        original_dump_path = getMacDumpPath();
-#else
-        original_dump_path = std::string(linux_path);
-#endif
         std::ostringstream oss;
         oss << "程序崩溃,崩溃原因二进制文件地址为:";
         // 重命名 minidump 文件
@@ -232,6 +224,65 @@ private:
             func_();
         return true;
     }
+# elif __APPLE__
+    bool handleCrash(const bool succeeded,
+                     const wchar_t* dump_path = nullptr,
+                     const wchar_t* minidump_id = nullptr,
+                     [[maybe_unused]] const char* linux_path = nullptr) const {
+        if (!succeeded)
+        {
+            DLL_LOG_ERROR(MODULE_NAME) << "Failed to generate minidump";
+            return false;
+        }
+        // 获取原始 minidump 文件路径
+        std::string original_dump_path;
+        // macOS 需要特殊处理获取路径
+        original_dump_path = getMacDumpPath();
+        std::ostringstream oss;
+        oss << "程序崩溃,崩溃原因二进制文件地址为:";
+        // 重命名 minidump 文件
+        const std::string new_dump_path = renameMinidumpFile(original_dump_path);
+        oss << new_dump_path;
+        // 获取崩溃信息文件路径（基于重命名后的文件）
+        // const std::string info_path = removeDmpSuffix(new_dump_path) + ".txt";
+        // oss << ",崩溃日志文件地址为:" << info_path;
+        // 写入自定义信息
+        // writeCustomInfo(info_path);
+        DLL_LOG_ERROR(MODULE_NAME) << oss.str() << ",程序异常退出,准备清理资源 ...";
+        if (func_)
+            func_();
+        return true;
+    }
+#else
+    bool handleCrash(const bool succeeded,
+                     const wchar_t* dump_path = nullptr,
+                     const wchar_t* minidump_id = nullptr,
+                     [[maybe_unused]] const char* linux_path = nullptr) const {
+        if (!succeeded)
+        {
+            DLL_LOG_ERROR(MODULE_NAME) << "Failed to generate minidump";
+            return false;
+        }
+        // 获取原始 minidump 文件路径
+        std::string original_dump_path;
+        original_dump_path = std::string(linux_path);
+        std::ostringstream oss;
+        oss << "程序崩溃,崩溃原因二进制文件地址为:";
+        // 重命名 minidump 文件
+        const std::string new_dump_path = renameMinidumpFile(original_dump_path);
+        oss << new_dump_path;
+        // 获取崩溃信息文件路径（基于重命名后的文件）
+        // const std::string info_path = removeDmpSuffix(new_dump_path) + ".txt";
+        // oss << ",崩溃日志文件地址为:" << info_path;
+        // 写入自定义信息
+        // writeCustomInfo(info_path);
+        DLL_LOG_ERROR(MODULE_NAME) << oss.str() << ",程序异常退出,准备清理资源 ...";
+        if (func_)
+            func_();
+        return true;
+    }
+#endif
+
 #ifdef __APPLE__
     // macOS 获取崩溃文件路径
     std::string getMacDumpPath() {
@@ -240,8 +291,8 @@ private:
         return "/tmp/crashdump";
     }
 #endif
-    // 写入自定义信息
-    void writeCustomInfo(const std::string& info_path)
+    /**写入自定义信息*/
+    [[maybe_unused]] void writeCustomInfo(const std::string& info_path)
     {
         // 获取当前时间
         const auto now = std::chrono::system_clock::now();
@@ -310,7 +361,7 @@ void CrashHandler::setCustomInfo(const std::string& key, const std::string& valu
     }
 }
 
-void CrashHandler::clearCustomInfo() const
+[[maybe_unused]] void CrashHandler::clearCustomInfo() const
 {
     if (impl_)
     {
@@ -318,7 +369,7 @@ void CrashHandler::clearCustomInfo() const
     }
 }
 
-void CrashHandler::triggerTestCrash() const
+[[maybe_unused]] void CrashHandler::triggerTestCrash() const
 {
     if (impl_)
     {

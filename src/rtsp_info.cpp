@@ -42,7 +42,7 @@ public:
         return password;
     }
 
-    int getPort() const
+    [[nodiscard]] int getPort() const
     {
         return port;
     }
@@ -159,7 +159,7 @@ std::string RtspVideoCapture::RtspInfo::getDefaultStreamPath() const
 }
 
 
-std::string RtspVideoCapture::RtspInfo::getDeviceTypeString() const
+[[maybe_unused]] std::string RtspVideoCapture::RtspInfo::getDeviceTypeString() const
 {
     static const std::map<RtspDeviceType, std::string> type_map = {
         {RtspDeviceType::UNKNOWN, "Unknown"},
@@ -173,7 +173,7 @@ std::string RtspVideoCapture::RtspInfo::getDeviceTypeString() const
 }
 
 
-void RtspVideoCapture::RtspInfo::setDeviceTypeFromString(
+[[maybe_unused]] void RtspVideoCapture::RtspInfo::setDeviceTypeFromString(
     const std::string& type_str) const
 {
     static const std::map<std::string, RtspDeviceType> str_to_type = {
@@ -194,7 +194,7 @@ void RtspVideoCapture::RtspInfo::setDeviceTypeFromString(
     impl_->setDeviceType((it != str_to_type.end()) ? it->second : RtspDeviceType::UNKNOWN);
 }
 
-bool RtspVideoCapture::RtspInfo::isValid() const
+[[maybe_unused]] bool RtspVideoCapture::RtspInfo::isValid() const
 {
     return !impl_->getIpAddress().empty() && impl_->getPort() > 0 && impl_->getPort() <= 65535;
 }

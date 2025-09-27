@@ -19,7 +19,7 @@ using namespace jade;
 class HaspAdapter::Impl
 {
     HaspAdapterDevice device_;
-    int featureId_;
+    [[maybe_unused]] int featureId_;
     std::string lastErrorMsg_;
     hasp_status_t lastError_;
     std::vector<int> haspIdList_;
@@ -109,7 +109,7 @@ private:
     {
         if (feature_id == 0)
             throw std::runtime_error("Feature ID 不能为0");
-        std::string scope = "";
+        std::string scope;
         switch (device_)
         {
         case DOCKER:

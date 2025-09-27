@@ -20,7 +20,7 @@ using namespace std::filesystem;
 using namespace std;
 using namespace jade;
 
-bool FileTools::createDirectory(const std::string& path)
+[[maybe_unused]] bool FileTools::createDirectory(const std::string& path)
 {
     try
     {
@@ -58,7 +58,7 @@ bool FileTools::createDirectories(const std::string& path)
     }
 }
 
-bool FileTools::isExists(const std::string& path)
+[[maybe_unused]] bool FileTools::isExists(const std::string& path)
 {
     try
     {
@@ -73,7 +73,7 @@ bool FileTools::isExists(const std::string& path)
 }
 
 
-bool FileTools::remove(const std::string& path)
+[[maybe_unused]] bool FileTools::remove(const std::string& path)
 {
     try
     {
@@ -103,13 +103,13 @@ string FileTools::fixPath(const std::string& path)
 #endif
 }
 
-string FileTools::getLastError()
+[[maybe_unused]] string FileTools::getLastError()
 {
     return getLastErrorRef();
 }
 
 
-vector<string> FileTools::getImageFiles(const std::string& path, const bool fullPath)
+[[maybe_unused]] vector<string> FileTools::getImageFiles(const std::string& path, const bool fullPath)
 {
     std::vector<std::string> imageFiles;
     try
@@ -146,11 +146,11 @@ vector<string> FileTools::getImageFiles(const std::string& path, const bool full
     return imageFiles;
 }
 
-bool FileTools::writeBinaryToFile(const std::string& path, const float* data, const int size)
+[[maybe_unused]] bool FileTools::writeBinaryToFile(const std::string& path, const float* data, const int size)
 {
     // 写入二进制文件
     std::ofstream outFile(path, ios::out | ios::binary);
-    if (!outFile.write(reinterpret_cast<const char*>(data), static_cast<long long>(size * sizeof(float))))
+    if (!outFile.write(reinterpret_cast<const char*>(data), size * sizeof(float)))
     {
         std::cerr << "文件路径为:" << path << "写入文件失败！" << std::endl;
         return false;
@@ -159,7 +159,7 @@ bool FileTools::writeBinaryToFile(const std::string& path, const float* data, co
     return true;
 }
 
-bool FileTools::writeBinaryToFile(const std::string& path, const char* data, const int size)
+[[maybe_unused]] bool FileTools::writeBinaryToFile(const std::string& path, const char* data, const int size)
 {
     // 写入二进制文件
     std::ofstream outFile(path, ios::out | ios::binary);
