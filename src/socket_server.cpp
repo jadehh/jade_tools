@@ -17,7 +17,6 @@
     #include <winsock2.h>
     #include <ws2tcpip.h>
     #pragma comment(lib, "ws2_32.lib")
-#define SOCKET_TYPE SOCKET
 #define INVALID_SOCKET_TYPE INVALID_SOCKET
 #define SOCKET_ERROR_TYPE SOCKET_ERROR
 #else
@@ -25,7 +24,6 @@
 #include <netinet/in.h>
 #include <unistd.h>
 #include <arpa/inet.h>
-#define SOCKET_TYPE int
 #define INVALID_SOCKET_TYPE (-1)
 #define SOCKET_ERROR_TYPE (-1)
 #endif
@@ -36,7 +34,6 @@ using namespace jade;
 class SocketServer::Impl final
 {
 public:
-    using MessageHandler = std::function<void(SOCKET_TYPE, const std::string&)>;
 
     explicit Impl(const int port, MessageHandler callback):
         port_(port), serverSocket_(0), running_(false), callback_(std::move(callback))
@@ -166,7 +163,7 @@ private:
     void handleClient(const SOCKET_TYPE clientSocket)
     {
         char buffer[1024];
-
+        std::vector<char> messageBuffer;  // 用于累积不完整的消息
         while (running_)
         {
             // 接收数据
@@ -185,16 +182,15 @@ private:
                 break;
             }
 
-            buffer[bytesReceived] = '\0';
-            std::string message(buffer);
-
-            // 调用消息处理方法
-            callback_(clientSocket, message);
+            // 将新接收的数据追加到消息缓冲区
+            messageBuffer.insert(messageBuffer.end(), buffer, buffer + bytesReceived);
         }
-
+        if (!messageBuffer.empty())
+        {
+            callback_(clientSocket, messageBuffer.data(), messageBuffer.size());
+        }
         // 关闭客户端连接
         closeSocket(clientSocket);
-
         // 从客户端列表中移除
         std::lock_guard lock(clientsMutex_);
         clients_.erase(std::remove(clients_.begin(), clients_.end(), clientSocket), clients_.end());
@@ -220,20 +216,10 @@ private:
     }
 };
 
-SocketServer& SocketServer::getInstance()
-{
-    static SocketServer instance;
-    return instance;
-}
 
-SocketServer::SocketServer():
-    impl_(nullptr)
-{
-}
 
-void SocketServer::init(const int port, const MessageHandler& handler)
+SocketServer::SocketServer(const int port, const MessageHandler& handler): impl_(new Impl(port, handler))
 {
-    impl_ = new Impl(port, handler);
 }
 
 void SocketServer::start() const

@@ -12,6 +12,7 @@
 #include <ws2tcpip.h>
 #pragma comment(lib, "ws2_32.lib")
 #include <tlhelp32.h>
+#define INVALID_SOCKET_VAL INVALID_SOCKET
 #else
 #include <sys/socket.h>
 #include <netinet/in.h>
@@ -20,6 +21,7 @@
 #include <locale>
 #include <codecvt>
 #include <dirent.h>
+#define INVALID_SOCKET_VAL -1
 #endif
 #include <iostream>
 #include <iomanip>
@@ -130,6 +132,45 @@ uint32_t jade::getIpAsInt(const char* ip)
     close(sockfd);
 #endif
     return localIP;
+}
+
+
+std::string jade::getClientIPAndPort(SOCKET_TYPE clientSocket) {
+    if (clientSocket == INVALID_SOCKET_VAL) {
+        return "Invalid socket";
+    }
+
+    struct sockaddr_storage clientAddr{};
+    socklen_t addrLen = sizeof(clientAddr);
+
+    // 获取客户端地址信息
+    if (getpeername(clientSocket, (struct sockaddr*)&clientAddr, &addrLen) != 0) {
+#ifdef _WIN32
+        int error = WSAGetLastError();
+        return "getpeername failed (Error: " + std::to_string(error) + ")";
+#else
+        return "getpeername failed (Error: " + std::string(strerror(errno)) + ")";
+#endif
+    }
+
+    char ipStr[INET6_ADDRSTRLEN];
+    int port = 0;
+
+    if (clientAddr.ss_family == AF_INET) {  // IPv4
+        auto* addr4 = reinterpret_cast<struct sockaddr_in*>(&clientAddr);
+        inet_ntop(AF_INET, &(addr4->sin_addr), ipStr, sizeof(ipStr));
+        port = ntohs(addr4->sin_port);
+    }
+    else if (clientAddr.ss_family == AF_INET6) {  // IPv6
+        auto* addr6 = reinterpret_cast<struct sockaddr_in6*>(&clientAddr);
+        inet_ntop(AF_INET6, &(addr6->sin6_addr), ipStr, sizeof(ipStr));
+        port = ntohs(addr6->sin6_port);
+    }
+    else {
+        return "Unknown address family";
+    }
+
+    return std::string(ipStr) + ":" + std::to_string(port);
 }
 
 [[maybe_unused]] std::string jade::getVersion()

@@ -103,4 +103,7 @@ else ()
     install(FILES include/jade_tools.h
             DESTINATION ${TARGET_ARCHITECTURE}-windows/include/jade_tools/
     )
+    install(FILES include/rapidxml.hpp
+            DESTINATION ${TARGET_ARCHITECTURE}-windows/include/jade_tools/
+    )
 endif()

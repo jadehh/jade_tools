@@ -22,6 +22,7 @@
 #ifdef _WIN32
 #include <windows.h>
 #define SqliteInt64 int64_t
+#define SOCKET_TYPE unsigned  int
 #ifdef JADE_TOOLS_EXPORTS
 #define JADE_API __declspec(dllexport)
 #else
@@ -30,6 +31,7 @@
 #else
 #define SqliteInt64 long long int
 #define JADE_API __attribute__((visibility("default")))
+#define SOCKET_TYPE int
 #endif
 #if defined(__GNUC__) && (__GNUC__ >= 7) && (__GNUC__ < 8)
 #define LOW_GCC 1
@@ -93,6 +95,12 @@ namespace jade
      */
     [[maybe_unused]] JADE_API  std::string getLocalIP(const std::string& ip);
 
+    /**
+     * 通过客户端Socket获取客户端IP和端口
+     * @param clientSocket
+     * @return
+     */
+    [[maybe_unused]] JADE_API std::string  getClientIPAndPort(SOCKET_TYPE clientSocket);
     /**
      * 获取版本
      * @return
@@ -629,20 +637,12 @@ namespace jade
 
     class JADE_API SocketServer
     {
-        using MessageHandler = std::function<void(int, const std::string&)>;
-
+        using MessageHandler = std::function<void(SOCKET_TYPE, char* ,size_t)>;
     public:
-        // 获取单例实例的静态方法
-        static SocketServer& getInstance();
-        // 删除拷贝构造函数和赋值运算符
-        SocketServer(const SocketServer&) = delete;
-        SocketServer& operator=(const SocketServer&) = delete;
-        void init(int port, const MessageHandler& handler);
+        SocketServer(int port,const MessageHandler& handler);
         void start() const;
         void stop() ;
-
     private:
-        SocketServer();
         class Impl;
         Impl* impl_;
     };
