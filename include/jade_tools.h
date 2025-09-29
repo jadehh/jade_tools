@@ -188,6 +188,7 @@ namespace jade
      * @return
      */
     JADE_API jade_time  getTimeStamp();
+    JADE_API std::string getCurrentDate();
     JADE_API std::string getTimeStampString(const jade_time& time, const char* fmt_arg = "[%Y-%m-%d %H:%M:%S]", bool with_milliseconds = false);
     JADE_API std::string getTimeStampString(const char* fmt_arg = "[%Y-%m-%d %H:%M:%S]", bool with_milliseconds = false);
     JADE_API std::string timePointToTimeString(std::chrono::time_point<std::chrono::system_clock> clock, const char* fmt_arg = "[%Y-%m-%d %H:%M:%S]",
@@ -334,6 +335,7 @@ namespace jade
         LoggerStream& operator<<(long value);
         LoggerStream& operator<<(unsigned int value);
         LoggerStream& operator<<(std::bitset<16> value);
+        LoggerStream& operator<<(int64_t value);
 
         [[nodiscard]] Impl* getImpl() const;
 
@@ -388,6 +390,9 @@ namespace jade
         // 写入二进制文件
         [[maybe_unused]] static bool writeBinaryToFile(const std::string& path, const float* data, int size);
         [[maybe_unused]] static bool writeBinaryToFile(const std::string& path, const char* data, int size);
+        [[maybe_unused]] static bool writeBinaryToFile(const std::string& path, const char* data, size_t size);
+        [[maybe_unused]] static bool writeBinaryToFile(const std::string& path, std::vector<uint8_t>& data);
+
         // 禁止拷贝和赋值
         FileTools(const FileTools&) = delete;
         FileTools& operator=(const FileTools&) = delete;

@@ -171,3 +171,30 @@ string FileTools::fixPath(const std::string& path)
     outFile.close();
     return true;
 }
+[[maybe_unused]] bool FileTools::writeBinaryToFile(const std::string& path, const char* data, const size_t size)
+{
+    // 写入二进制文件
+    std::ofstream outFile(path, ios::out | ios::binary);
+    if (!outFile.write(data, size))
+    {
+        std::cerr << "文件路径为:" << path << "写入文件失败！" << std::endl;
+        return false;
+    }
+    outFile.close();
+    return true;
+}
+[[maybe_unused]] bool FileTools::writeBinaryToFile(const std::string& path, std::vector<uint8_t>& data)
+{
+    // 写入二进制文件
+    std::ofstream outFile(path, ios::out | ios::binary);
+    if (!outFile.write(reinterpret_cast<const char*>(data.data()), data.size()))
+    {
+        std::cerr << "文件路径为:" << path << "写入文件失败！" << std::endl;
+        return false;
+    }
+    outFile.close();
+    return true;
+}
+
+
+

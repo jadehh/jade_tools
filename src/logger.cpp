@@ -202,7 +202,8 @@ public:
     void setStream(const bool value) { buffer_ << value; }
     void setStream(const long value) { buffer_ << value; }
     void setStream(const unsigned int value) { buffer_ << value; }
-    void setStream(std::bitset<16> value) { buffer_ << value; }
+    void setStream(const std::bitset<16> value) { buffer_ << value; }
+    void setStream(const int64_t value) { buffer_ << value; }
 
     void log() const
     {
@@ -309,17 +310,22 @@ LoggerStream& LoggerStream::operator<<(const long value)
     return *this;
 }
 
-LoggerStream& LoggerStream::operator<<(unsigned int value)
+LoggerStream& LoggerStream::operator<<(const unsigned int value)
 {
     impl_->setStream(value);
     return *this;
 }
-LoggerStream& LoggerStream::operator<<(std::bitset<16> value)
+LoggerStream& LoggerStream::operator<<(const std::bitset<16> value)
 {
     impl_->setStream(value);
     return *this;
 }
 
+LoggerStream& LoggerStream::operator<<(int64_t value)
+{
+    impl_->setStream(value);
+    return *this;
+}
 
 LoggerStream::~LoggerStream()
 {

@@ -385,6 +385,14 @@ jade::jade_time jade::getTimeStamp()
     return result;
 }
 
+std::string jade::getCurrentDate()
+{
+    const jade_time time = getTimeStamp();
+    std::ostringstream oss;
+    oss << std::put_time(&time, "%Y-%m-%d");
+    return oss.str();
+}
+
 std::string jade::timePointToTimeString(const std::chrono::time_point<std::chrono::system_clock> clock, const char* fmt_arg,
                                         const bool with_milliseconds)
 {
