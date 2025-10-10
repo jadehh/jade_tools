@@ -37,7 +37,7 @@ jobs:
           echo "Tag: $tag"
           git checkout $check_name -b $branch_name  ##分支不存在用这个
           ## git checkout $branch_name  ## 分支已存在用这个
-          cd code/ && cmake -P cmake/extractChangelog.cmake && cd ../
+          cd code/ && cmake -P ./cmake/extractChangelog.cmake && cd ../
           cp -r code/CHANGELOG_TAG.md README.md
           #mkdir -p .github/workflows/
           #cp -r code/workflows/python-release.yml .github/workflows/python-release.yml
