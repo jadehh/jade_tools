@@ -28,8 +28,8 @@ public:
 
     struct StepMetrics
     {
-        [[maybe_unused]] std::chrono::time_point<std::chrono::high_resolution_clock> startTime;
-        [[maybe_unused]] std::chrono::milliseconds duration{0};
+        std::chrono::time_point<std::chrono::high_resolution_clock> startTime;
+        std::chrono::milliseconds duration{0};
         std::vector<jade::SystemMonitorImpl::ResourceMetrics> metricsList;
     };
 

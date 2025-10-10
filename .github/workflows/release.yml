@@ -1,0 +1,16 @@
+name: Release Pipeline
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  prepare_release:
+    uses: ./.github/workflows/prepare-release.yml
+    secrets: inherit
+
+  create_release:
+    needs: prepare_release
+    uses: ./.github/workflows/create-release.yml
+    secrets: inherit

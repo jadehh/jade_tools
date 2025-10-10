@@ -11,7 +11,6 @@
 #pragma once
 
 // 跨平台导出宏
-#include <atomic>
 #include <chrono>
 #include <functional>
 #include <map>
@@ -63,10 +62,8 @@ namespace jade
 {
      struct JADE_API jade_time : tm
     {
-        [[maybe_unused]] int tm_millis;
+        int tm_millis;
     };
-
-
 
     /**
      * ip地址转Int
@@ -335,8 +332,11 @@ namespace jade
         LoggerStream& operator<<(long value);
         LoggerStream& operator<<(unsigned int value);
         LoggerStream& operator<<(std::bitset<16> value);
-        LoggerStream& operator<<(int64_t value);
-
+#ifdef _WIN32
+        LoggerStream& operator<<(int64 value);
+#else
+        LoggerStream& operator<<(unsigned long);
+#endif
         [[nodiscard]] Impl* getImpl() const;
 
 

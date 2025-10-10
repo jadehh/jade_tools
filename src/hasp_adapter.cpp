@@ -9,6 +9,8 @@
 #include <algorithm>
 #include <atomic>
 #include <condition_variable>
+#include <thread>
+
 #include "include/jade_tools.h"
 using namespace jade;
 #include "include/hasp_code.h"
@@ -19,7 +21,7 @@ using namespace jade;
 class HaspAdapter::Impl
 {
     HaspAdapterDevice device_;
-    [[maybe_unused]] int featureId_;
+    int featureId_;
     std::string lastErrorMsg_;
     hasp_status_t lastError_;
     std::vector<int> haspIdList_;

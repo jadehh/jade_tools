@@ -39,10 +39,18 @@ using namespace std;
 uint32_t jade::getIpAsInt(const char* ip)
 {
     uint8_t a, b, c, d;
+#ifdef _WIN32
     if (sscanf_s(ip, "%hhu.%hhu.%hhu.%hhu", &a, &b, &c, &d) != 4)
     {
         return 0;
     }
+#else
+    if (sscanf(ip, "%hhu.%hhu.%hhu.%hhu", &a, &b, &c, &d) != 4)
+    {
+        return 0;
+    }
+#endif
+
     return (a << 24) | (b << 16) | (c << 8) | d;
 }
 
@@ -144,7 +152,7 @@ std::string jade::getClientIPAndPort(SOCKET_TYPE clientSocket) {
     socklen_t addrLen = sizeof(clientAddr);
 
     // 获取客户端地址信息
-    if (getpeername(clientSocket, (struct sockaddr*)&clientAddr, &addrLen) != 0) {
+    if (getpeername(clientSocket, reinterpret_cast<struct sockaddr*>(&clientAddr), &addrLen) != 0) {
 #ifdef _WIN32
         int error = WSAGetLastError();
         return "getpeername failed (Error: " + std::to_string(error) + ")";
@@ -157,12 +165,12 @@ std::string jade::getClientIPAndPort(SOCKET_TYPE clientSocket) {
     int port = 0;
 
     if (clientAddr.ss_family == AF_INET) {  // IPv4
-        auto* addr4 = reinterpret_cast<struct sockaddr_in*>(&clientAddr);
+        const auto* addr4 = reinterpret_cast<struct sockaddr_in*>(&clientAddr);
         inet_ntop(AF_INET, &(addr4->sin_addr), ipStr, sizeof(ipStr));
         port = ntohs(addr4->sin_port);
     }
     else if (clientAddr.ss_family == AF_INET6) {  // IPv6
-        auto* addr6 = reinterpret_cast<struct sockaddr_in6*>(&clientAddr);
+        const auto* addr6 = reinterpret_cast<struct sockaddr_in6*>(&clientAddr);
         inet_ntop(AF_INET6, &(addr6->sin6_addr), ipStr, sizeof(ipStr));
         port = ntohs(addr6->sin6_port);
     }

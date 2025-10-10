@@ -102,12 +102,13 @@ cmake --build . --config Release --target install
 
 ### 启动
 ```bash
-docker run  --name devel -v ${PWD}:/app -it -w /app jadehh/jade-tools:1.0.3-devel-ubuntu24.04 
+docker run  --name devel -v ${PWD}:/app -it -w /app jadehh/jade-tools:1.0.3-opencv-4.3.0-cuda-10.0-cudnn7-devel-ubuntu18.04
 ```
 
 ### 指定参数
 ```text
--D CMAKE_INSTALL_PREFIX="D:\SDKS\jade_tools" -D SQLITE3_DIR="/usr/include" -D OPENSSL_DIR="/usr/include" -D BREAKPAD_DIR="/usr/local/breakpad"  -D SPDLOG_DIR="/usr/include"
+-D CMAKE_INSTALL_PREFIX="/usr/local/jade_tools" -D SQLITE3_DIR="/usr/include" -D OPENSSL_DIR="/usr/include" -D BREAKPAD_DIR="/usr/local/breakpad"  -D SPDLOG_DIR="/usr/include" -D OPENCV_DIR="/usr/local/opencv"
+make -j$(nproc) && make install 
 ```
 
 ### Release

@@ -1,0 +1,61 @@
+name: Prepare Release
+
+on: workflow_call
+
+jobs:
+  prepare:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout main repo
+        uses: actions/checkout@v3
+        with:
+          repository: jadehh/release
+          fetch-depth: 0
+          token: ${{ secrets.GH_PAT }}
+
+      - name: Checkout source code
+        uses: actions/checkout@v3
+        with:
+          repository: jadehh/jade_tools
+          ref: main
+          path: code
+          fetch-depth: 0
+          token: ${{ secrets.GH_PAT }}
+
+      - name: Setup branch and files
+        run: |
+          git config --global user.email "jadehh@live.com"
+          git config --global user.name "jade"
+          
+          check_name=$(git rev-list --max-parents=0 HEAD)
+          branch_name=$(cd code/ && git rev-parse --abbrev-ref HEAD)
+          tag=$(cd code/ && git describe --abbrev=0 --tags)
+          
+          echo "Base commit: check_name"
+          echo "Branch name: branch_name"
+          echo "Tag: $tag"
+          git checkout check_name -b branch_name  ##分支不存在用这个
+          ## git checkout branch_name  ## 分支已存在用这个
+          git checkout check_name -b branch_name
+          cp -r code/CHANGELOG_TAG.md README.md
+          mkdir -p .github/workflows/
+          cp -r code/workflows/python-release.yml .github/workflows/python-release.yml
+          
+          git add .github/workflows/python-release.yml
+          git add README.md
+          
+          commit_msg="* 更新线阵相机管理服务${tag}"
+          git commit -a -m "$commit_msg"
+          git tag -fa ${tag} -m "更新${tag}"
+
+      - name: Upload to target repo
+        uses: ad-m/github-push-action@master
+        with:
+          github_token: ${{ secrets.GH_PAT }}
+          repository: jadehh/jadehh_file
+          directory: .
+          branch: jade_tools
+          force: true
+          tags: true
+        env:
+          GITHUB_ACTOR: jadehh

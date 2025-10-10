@@ -203,8 +203,11 @@ public:
     void setStream(const long value) { buffer_ << value; }
     void setStream(const unsigned int value) { buffer_ << value; }
     void setStream(const std::bitset<16> value) { buffer_ << value; }
+#ifdef _WIN32
     void setStream(const int64_t value) { buffer_ << value; }
-
+#else
+    void setStream(const unsigned long value) { buffer_ << value; }
+#endif
     void log() const
     {
         CustomFormatter::setDllName(moduleName_);
@@ -320,13 +323,19 @@ LoggerStream& LoggerStream::operator<<(const std::bitset<16> value)
     impl_->setStream(value);
     return *this;
 }
-
+#ifdef _WIN32
 LoggerStream& LoggerStream::operator<<(int64_t value)
 {
     impl_->setStream(value);
     return *this;
 }
-
+#else
+LoggerStream&LoggerStream::operator<<(const unsigned long value)
+{
+    impl_->setStream(value);
+    return *this;
+}
+#endif
 LoggerStream::~LoggerStream()
 {
     impl_->log();

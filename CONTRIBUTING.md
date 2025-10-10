@@ -19,13 +19,15 @@
 * 支持更多的二进制类型的文件写入
 * 新增获取天数的方法
 * 支持Section根据key字段的前缀获取Integer数组
+* 解决在Linux下的各种异常问题
+* 测试github流发布
 ---
-
 
 <details onclose>
 
 ## v1.0.2
 * Logger日志支持多个单例，使用第一次初始化的结果，实现对不同DLL中输出不一样的内容
+---
 
 ## v1.0.1
 * log支持输出exception,并根据exitCode是否退出程序
@@ -45,5 +47,4 @@
 * 支持文件夹操作
 * 支持log操作
 * 添加工具类
-
 </details>

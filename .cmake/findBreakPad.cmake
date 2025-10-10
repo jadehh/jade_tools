@@ -17,6 +17,7 @@ else ()
         set(BREAKPAD_LIBS libbreakpad_client${BREAKPAD_LIBS_SUFFIX} libdisasm${BREAKPAD_LIBS_SUFFIX})
     else ()
         set(BREAKPAD_INCLUDE_DIR "${BREAKPAD_DIR}/include/breakpad")
+        set(BREAKPAD_LIB_DIR "${BREAKPAD_DIR}/lib")
         if(CMAKE_CXX_COMPILER_VERSION VERSION_GREATER_EQUAL 7.0 AND CMAKE_CXX_COMPILER_VERSION VERSION_LESS 8.0)
             # GCC 7 特定的设置
             set(BREAKPAD_LIBS breakpad_client disasm pthread stdc++fs)

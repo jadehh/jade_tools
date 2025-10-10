@@ -1,0 +1,27 @@
+name: Create Release
+
+on: workflow_call
+
+jobs:
+  create:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+        with:
+          repository: jadehh/jade_tools
+          path: code
+          token: ${{ secrets.GH_PAT }}
+      - name: Create CHANGELOG
+        run:
+          cmake -P code/cmake/extractChangelog.cmake
+      - name: Create Release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GH_PAT }}
+        with:
+          tag_name: ${{ github.ref }}
+          release_name: ${{ github.ref }}
+          body_path: code/CHANGELOG_TAG.md
+          draft: false
+          prerelease: false

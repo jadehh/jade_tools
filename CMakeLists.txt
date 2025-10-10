@@ -86,24 +86,40 @@ else ()
     endif ()
     target_compile_definitions(${APP_NAME} PRIVATE JADE_TOOLS_EXPORTS)
     target_link_libraries(${APP_NAME} ${NVML_LIBS} ${OPENSSL_LIBS}  ${SQLITE3_LIBS} ${BREAKPAD_LIBS} ${SPDLOG_LIBS}  ${HASP_ADAPTER_LIBS}  ${OPENCV_LIBS})
-    set(WIN32_PREFIX "")
     if(WIN32)
-        set(WIN32_PREFIX "${TARGET_ARCHITECTURE}-windows")
+        set(ARCHIVE_DEST "${TARGET_ARCHITECTURE}-windows/lib")
+        set(LIBRARY_DEST "${TARGET_ARCHITECTURE}-windows/bin")
+        set(RUNTIME_DEST "${TARGET_ARCHITECTURE}-windows/bin")
+        set(INCLUDE_DEST "${TARGET_ARCHITECTURE}-windows/include/jade_tools")
+
+        # Add Debug subdirectory if needed
         if(CMAKE_BUILD_TYPE STREQUAL "Debug")
-            set(WIN32_PREFIX "${WIN32_PREFIX}/Debug")
+            set(ARCHIVE_DEST "${ARCHIVE_DEST}/Debug")
+            set(LIBRARY_DEST "${LIBRARY_DEST}/Debug")
+            set(RUNTIME_DEST "${RUNTIME_DEST}/Debug")
         endif()
+    else()
+        set(ARCHIVE_DEST "lib")
+        set(LIBRARY_DEST "bin")
+        set(RUNTIME_DEST "bin")
+        set(INCLUDE_DEST "include/jade_tools")
     endif()
 
+    # Install targets
     install(TARGETS ${APP_NAME}
-            ARCHIVE DESTINATION ${WIN32_PREFIX}/lib
-            LIBRARY DESTINATION ${WIN32_PREFIX}/bin
-            RUNTIME DESTINATION ${WIN32_PREFIX}/bin
+            ARCHIVE DESTINATION ${ARCHIVE_DEST}
+            LIBRARY DESTINATION ${LIBRARY_DEST}
+            RUNTIME DESTINATION ${RUNTIME_DEST}
     )
 
-    install(FILES include/jade_tools.h
-            DESTINATION ${TARGET_ARCHITECTURE}-windows/include/jade_tools/
+    # Install header files
+    set(HEADER_FILES
+            include/jade_tools.h
+            include/rapidxml.hpp
     )
-    install(FILES include/rapidxml.hpp
-            DESTINATION ${TARGET_ARCHITECTURE}-windows/include/jade_tools/
+
+    install(FILES ${HEADER_FILES}
+            DESTINATION ${INCLUDE_DEST}
     )
+
 endif()
