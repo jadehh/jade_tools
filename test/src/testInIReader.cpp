@@ -32,6 +32,7 @@ void testInIReader()
     }
     else
     {
+        auto configs = reader.GetIntegerWithPrefix("EIO","EIOOutputBitNumber");
         LOG_DEBUG() << "Config loaded from 'test.ini': found sections="
             << sections(reader)
             << " version=" << reader.GetInteger("protocol", "version", -1)

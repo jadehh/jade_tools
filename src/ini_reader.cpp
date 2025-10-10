@@ -44,6 +44,42 @@ public:
         std::transform(key.begin(), key.end(), key.begin(), ::tolower);
         return key;
     }
+    std::vector<std::string> GetKeys(const std::string& section) const
+    {
+        std::vector<std::string> keys;
+        std::string prefix = section + "=";
+        std::transform(prefix.begin(), prefix.end(), prefix.begin(), ::tolower);
+        for (const auto& [fst, snd] : _values)
+        {
+            if (fst.compare(0, prefix.size(), prefix) == 0)
+            {
+                keys.push_back(fst.substr(prefix.size()));
+            }
+        }
+        return keys;
+    }
+
+    std::vector<std::pair<std::string, std::string>> GetKeysWithPrefix(const std::string& section, const std::string& prefix)
+    {
+        std::vector<std::pair<std::string, std::string>> result;
+
+        // 1. 获取该section下所有键
+        const std::vector<std::string> keys = GetKeys(section);
+        std::string prefix_lower = prefix;
+        std::transform(prefix_lower.begin(), prefix_lower.end(), prefix_lower.begin(), ::tolower);
+
+        // 2. 过滤出以prefix开头的键
+        for (const auto& key : keys) {
+            if (key.compare(0, prefix_lower.length(), prefix_lower) == 0) {  // 检查前缀匹配
+                std::string value =  _values[MakeKey(section, key)];
+                result.emplace_back(key, value);
+            }
+        }
+        // 3. 按键名字典序排序（可选）
+        std::sort(result.begin(), result.end(),[](const auto& a, const auto& b) { return a.first < b.first; });
+        return result;
+    }
+
     static int ValueHandler(void* user, const char* section, const char* name, const char* value){
         const auto impl = static_cast<Impl*>(user);
         const std::string key = MakeKey(section, name);
@@ -93,6 +129,9 @@ std::string INIReader::Get(const std::string& section,
     return impl_->_values.count(key) ? impl_->_values[key] : default_value;
 }
 
+
+
+
 long INIReader::GetInteger(const std::string& section,
                            const std::string& name,
                            const long default_value) const
@@ -107,6 +146,27 @@ long INIReader::GetInteger(const std::string& section,
         LOG_INIREADER_WARN(section, name, default_value)
     }
     return end > value ? n : default_value;
+}
+std::vector<long> INIReader::GetIntegerWithPrefix(const std::string& section, const std::string& prefix) const
+{
+    auto pairs = impl_->GetKeysWithPrefix(section, prefix);
+    std::vector<long> result;
+    for (const auto& [key, value] : pairs)
+    {
+        const char* valStr = value.c_str();
+        char* end;
+        // This parses "1234" (decimal) and also "0x4D2" (hex)
+        const long n = strtol(valStr, &end, 0);
+        if (end > valStr)
+        {
+            result.push_back(n);
+        }else
+        {
+            result.push_back(0);
+            LOG_INIREADER_WARN(section, key, 0)
+        }
+    }
+    return result;
 }
 
 double INIReader::GetReal(const std::string& section,

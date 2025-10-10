@@ -608,6 +608,7 @@ namespace jade
         // Return the list of sections found in ini file
         [[nodiscard]] const std::set<std::string>& Sections() const;
 
+
         // Get a string value from INI file, returning default_value if not found.
         [[nodiscard]] std::string Get(const std::string& section, const std::string& name,
                                       const std::string& default_value) const;
@@ -615,6 +616,8 @@ namespace jade
         // Get an integer (long) value from INI file, returning default_value if
         // not found or not a valid integer (decimal "1234", "-1234", or hex "0x4d2").
         [[nodiscard]] long GetInteger(const std::string& section, const std::string& name, long default_value) const;
+
+        [[nodiscard]] std::vector<long> GetIntegerWithPrefix(const std::string& section,const std::string& prefix) const;
 
         // Get a real (floating point double) value from INI file, returning
         // default_value if not found or not a valid floating point value

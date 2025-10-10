@@ -8,15 +8,19 @@
 */
 #include "test/include/testSocket.h"
 
-void MessageHandle(const int socket, const std::string& message)
+#include <thread>
+
+void MessageHandle(SOCKET_TYPE socket, const char*data, size_t size)
 {
-    LOG_DEBUG() << "处理socket自定义信息" << socket << message;
+    LOG_DEBUG() << "处理socket自定义信息" << socket << data;
 }
 
 void testSocketServer()
 {
     LOG_INFO() << "=====================================Socket Server测试开始" << "=====================================";
-    jade::SocketServer::getInstance().init(8099, MessageHandle);
-    jade::SocketServer::getInstance().start();
+    std::shared_ptr<jade::SocketServer> socket_server = std::make_shared<jade::SocketServer>(8099,MessageHandle);
+    socket_server->start();
+    std::this_thread::sleep_for(std::chrono::seconds(5));
+    socket_server->stop();
     LOG_INFO() << "=====================================Socket Server测试结束" << "=====================================";
 }

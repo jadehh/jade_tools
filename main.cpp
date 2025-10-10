@@ -14,7 +14,6 @@ void cleanup()
     LOG_TRACE() << "================================清理==================================";
     jade::SqliteHelper::getInstance().close();  // Sqlite数据库释放必须放在主线程的最后
     jade::MultiRtspManager::getInstance().stopAll();
-    jade::SocketServer::getInstance().stop();
     jade::HaspAdapter::getInstance().shutDown();
     jade::ApplicationController::getInstance().stop();
     jade::Logger::getInstance().shutDown();
