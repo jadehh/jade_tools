@@ -28,8 +28,8 @@ jobs:
           git config --global user.name "jade"
           
           check_name=$(git rev-list --max-parents=0 HEAD)
-          # branch_name=$(cd code/ && git rev-parse --abbrev-ref HEAD)
-          branch_name = jade_tools
+          # branch_name=$(cd code/ && git rev-parse --abbrev-ref HEAD) # 是release分支的名称，如果当前分支是main，则固定分支的名称
+          branch_name=jade_tools
           tag=$(cd code/ && git describe --abbrev=0 --tags)
           
           echo "Base commit: $check_name"
