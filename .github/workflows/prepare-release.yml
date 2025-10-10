@@ -28,7 +28,8 @@ jobs:
           git config --global user.name "jade"
           
           check_name=$(git rev-list --max-parents=0 HEAD)
-          branch_name=$(cd code/ && git rev-parse --abbrev-ref HEAD)
+          # branch_name=$(cd code/ && git rev-parse --abbrev-ref HEAD)
+          branch_name = jade_tools
           tag=$(cd code/ && git describe --abbrev=0 --tags)
           
           echo "Base commit: $check_name"
