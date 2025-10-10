@@ -10,6 +10,13 @@ if(NOT REQUESTED_VERSION)
     )
 endif()
 
+execute_process(
+        COMMAND bash -c "basename $(git config --get remote.origin.url) .git"
+        OUTPUT_VARIABLE REPO_NAME
+        OUTPUT_STRIP_TRAILING_WHITESPACE
+)
+message(STATUS "Repository name: ${REPO_NAME}")
+
 # 验证文件存在
 if(NOT EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/CONTRIBUTING.md")
     message(FATAL_ERROR "CONTRIBUTING.md not found in ${CMAKE_CURRENT_SOURCE_DIR}")
@@ -21,7 +28,7 @@ file(READ "${CMAKE_CURRENT_SOURCE_DIR}/CONTRIBUTING.md" CONTRIB_MD)
 # 清理HTML细节标签
 string(REGEX REPLACE "<details[^>]*>.*</details>" "" CLEAN_CHANGELOG "${CONTRIB_MD}")
 string(STRIP "${CLEAN_CHANGELOG}" CLEAN_CHANGELOG)
-string(APPEND CLEAN_CHANGELOG "\n## 发布地址 \n [详细地址](https://)")
+string(APPEND CLEAN_CHANGELOG "\n## 发布地址 \n [详细地址](https://github.com/jadehh/Release/releases/tag/${REPO_NAME}-${REQUESTED_VERSION})")
 
 # 输出文件路径
 set(OUTPUT_FILE "${CMAKE_CURRENT_SOURCE_DIR}/CHANGELOG_TAG.md")
