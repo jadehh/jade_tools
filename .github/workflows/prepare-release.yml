@@ -46,7 +46,7 @@ jobs:
           
           commit_msg="* 更新线阵相机管理服务${tag}"
           git commit -a -m "$commit_msg"
-          git tag -fa ${tag} -m "更新${tag}"
+          git tag -fa ${$branch_name}${tag} -m "${commit_msg}"
 
       - name: Upload to target repo
         uses: ad-m/github-push-action@master
