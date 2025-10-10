@@ -37,16 +37,17 @@ jobs:
           echo "Tag: $tag"
           git checkout $check_name -b $branch_name  ##分支不存在用这个
           ## git checkout $branch_name  ## 分支已存在用这个
+          cmake -P code/cmake/extractChangelog.cmake
           cp -r code/CHANGELOG_TAG.md README.md
-          mkdir -p .github/workflows/
-          cp -r code/workflows/python-release.yml .github/workflows/python-release.yml
+          #mkdir -p .github/workflows/
+          #cp -r code/workflows/python-release.yml .github/workflows/python-release.yml
           
-          git add .github/workflows/python-release.yml
-          git add README.md
+          #git add .github/workflows/python-release.yml
+          #git add README.md
           
-          commit_msg="* 更新线阵相机管理服务${tag}"
-          git commit -a -m "$commit_msg"
-          git tag -fa ${tag} -m "更新${tag}"
+          #commit_msg="* 更新线阵相机管理服务${tag}"
+          #git commit -a -m "$commit_msg"
+          #git tag -fa ${tag} -m "更新${tag}"
 
       - name: Upload to target repo
         uses: ad-m/github-push-action@master
