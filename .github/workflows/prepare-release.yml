@@ -31,12 +31,11 @@ jobs:
           branch_name=$(cd code/ && git rev-parse --abbrev-ref HEAD)
           tag=$(cd code/ && git describe --abbrev=0 --tags)
           
-          echo "Base commit: check_name"
-          echo "Branch name: branch_name"
+          echo "Base commit: $check_name"
+          echo "Branch name: $branch_name"
           echo "Tag: $tag"
-          git checkout check_name -b branch_name  ##分支不存在用这个
-          ## git checkout branch_name  ## 分支已存在用这个
-          git checkout check_name -b branch_name
+          git checkout $check_name -b $branch_name  ##分支不存在用这个
+          ## git checkout $branch_name  ## 分支已存在用这个
           cp -r code/CHANGELOG_TAG.md README.md
           mkdir -p .github/workflows/
           cp -r code/workflows/python-release.yml .github/workflows/python-release.yml
