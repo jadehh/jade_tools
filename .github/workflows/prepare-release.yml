@@ -41,10 +41,9 @@ jobs:
           cp -r code/RELEASE_NOTES.md README.md
           mkdir -p .github/workflows/
           cp -r code/workflows/.github ./
-          git add .github/workflows/release.yaml
+          git add .github/workflows/packing.yml
           git add .github/workflows/release.yaml
           git add README.md
-          
           commit_msg="* 更新线阵相机管理服务${tag}"
           git commit -a -m "$commit_msg"
           git tag -fa ${branch_name}-${tag} -m "${commit_msg}"
