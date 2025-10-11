@@ -29,9 +29,13 @@ file(READ "${CMAKE_CURRENT_SOURCE_DIR}/CONTRIBUTING.md" CONTRIB_MD)
 string(REGEX REPLACE "<details[^>]*>.*</details>" "" CLEAN_CHANGELOG "${CONTRIB_MD}")
 string(STRIP "${CLEAN_CHANGELOG}" CLEAN_CHANGELOG)
 string(APPEND CLEAN_CHANGELOG "\n## 发布地址 \n [详细地址](https://github.com/jadehh/Release/releases/tag/${REPO_NAME}-${REQUESTED_VERSION})")
+string(TIMESTAMP CURRENT_TIME "%Y-%m-%d %H:%M:%S")
+
+set(CLEAN_CHANGELOG "# 线阵相机管理服务  \n ## 更新时间 \n  ${CURRENT_TIME} \n  ${CLEAN_CHANGELOG}")
+
 
 # 输出文件路径
-set(OUTPUT_FILE "${CMAKE_CURRENT_SOURCE_DIR}/CHANGELOG_TAG.md")
+set(OUTPUT_FILE "${CMAKE_CURRENT_SOURCE_DIR}/RELEASE_NOTES.md")
 
 # 写入文件
 file(WRITE "${OUTPUT_FILE}" "${CLEAN_CHANGELOG}")

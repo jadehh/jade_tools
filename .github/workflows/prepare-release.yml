@@ -38,10 +38,11 @@ jobs:
           git checkout $check_name -b $branch_name  ##分支不存在用这个
           ## git checkout $branch_name  ## 分支已存在用这个
           cd code/ && cmake -P .cmake/extractChangelog.cmake && cd ../
-          cp -r code/CHANGELOG_TAG.md README.md
-          #mkdir -p .github/workflows/
-          #cp -r code/workflows/python-release.yml .github/workflows/python-release.yml
-          #git add .github/workflows/python-release.yml
+          cp -r code/RELEASE_NOTES.md README.md
+          mkdir -p .github/workflows/
+          cp -r code/workflows/.github ./
+          git add .github/workflows/release.yaml
+          git add .github/workflows/release.yaml
           git add README.md
           
           commit_msg="* 更新线阵相机管理服务${tag}"
