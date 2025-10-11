@@ -37,7 +37,7 @@ string(STRIP "${CLEAN_CHANGELOG}" CLEAN_CHANGELOG)
 string(APPEND CLEAN_CHANGELOG "\n## 发布地址 \n [详细地址](https://github.com/jadehh/Release/releases/tag/${REPO_NAME}-${REQUESTED_VERSION})")
 string(TIMESTAMP CURRENT_TIME "%Y-%m-%d %H:%M:%S")
 
-set(CLEAN_CHANGELOG "# 线阵相机管理服务  \n ## 更新时间 \n  ${CURRENT_TIME} \n  ${CLEAN_CHANGELOG}")
+set(CLEAN_CHANGELOG "# Jade Tools C++ 工具合集  \n ## 更新时间 \n  ${CURRENT_TIME} \n  ${CLEAN_CHANGELOG}")
 
 # 写入文件
 file(WRITE "${CMAKE_CURRENT_SOURCE_DIR}/${OUTPUT_FILE}" "${CLEAN_CHANGELOG}")

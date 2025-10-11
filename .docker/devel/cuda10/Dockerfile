@@ -112,3 +112,7 @@ RUN git clone --depth 1 --branch 4.3.0 https://github.com/opencv/opencv.git  && 
 
 ## 设置运行环境 包括breakpad和opencv的环境
 ENV PATH=/usr/local/opencv/bin:/usr/local/breakpad/bin/:${PATH}
+## 时区设置
+RUN apt-get update && apt-get install tzdata &&  \
+    rm -rf /var/lib/apt/lists/* && \
+    ln -sf /usr/share/zoneinfo/Asia/Shanghai /etc/localtime

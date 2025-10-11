@@ -43,7 +43,7 @@ jobs:
           git add .github/workflows/release.yml
           git add .github/workflows/packing.yml
           git add README.md
-          commit_msg="* 更新线阵相机管理服务${tag}"
+          commit_msg="* 更新 jade_tools${tag}"
           git commit -a -m "$commit_msg"
           git tag -fa ${branch_name}-${tag} -m "${commit_msg}"
 
