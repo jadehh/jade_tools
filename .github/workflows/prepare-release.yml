@@ -39,9 +39,7 @@ jobs:
           ## git checkout $branch_name  ## 分支已存在用这个
           cd code/ && cmake -P .cmake/extractChangelog.cmake && cd ../
           cp -r code/RELEASE_NOTES.md README.md
-          mkdir -p .github/workflows/
-          cp -r code/workflows/.github/release.yml .github/workflows/
-          cp -r code/workflows/.github/packing.yml .github/workflows/
+          cp -r code/workflows/.github ./ && ls -la
           git add .github/workflows/release.yml
           git add .github/workflows/packing.yml
           git add README.md
