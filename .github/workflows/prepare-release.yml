@@ -40,9 +40,10 @@ jobs:
           cd code/ && cmake -P .cmake/extractChangelog.cmake && cd ../
           cp -r code/RELEASE_NOTES.md README.md
           mkdir -p .github/workflows/
-          cp -r code/workflows/.github ./
+          cp -r code/workflows/.github/release.yml .github/workflows/
+          cp -r code/workflows/.github/packing.yml .github/workflows/
+          git add .github/workflows/release.yml
           git add .github/workflows/packing.yml
-          git add .github/workflows/release.yaml
           git add README.md
           commit_msg="* 更新线阵相机管理服务${tag}"
           git commit -a -m "$commit_msg"
